@@ -9,9 +9,11 @@
     <Grid x:Name="LayoutRoot">
 
         <Grid.RowDefinitions>
-            <RowDefinition Height="20" /><!-- MENU -->
+            <RowDefinition Height="20" />
+            <RowDefinition Height="25" />
             <RowDefinition Height=".1*" />
-            <RowDefinition Height="20" /> <!-- STATUSBAR-->
+            <RowDefinition Height="20" />
+            <!-- STATUSBAR-->
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width=".1*"/>
@@ -25,10 +27,18 @@
                 <MenuItem x:Name="miSearchWeenies" Header="Weenies..." Click="miSearchWeenies_Click"/>
             </MenuItem>
         </Menu>
-        
-        
-        
-        <TabControl Grid.Row="1" x:Name="tabGroupWeenie" Visibility="Hidden">
+        <Canvas Grid.Row="1" VerticalAlignment="Center" Height="30">
+            <Canvas.Background>
+                <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.ControlLightColorKey}}"/>
+            </Canvas.Background>
+            <TextBox x:Name="txtSearch" Text="This is my text" Canvas.Left="63" Canvas.Top="6" HorizontalAlignment="Left" Height="18" VerticalAlignment="Center" Width="137" KeyDown="txtSearch_KeyDown"/>
+            <Label Content="Search:" Canvas.Left="10" Canvas.Top="2" VerticalContentAlignment="Center" RenderTransformOrigin="1.567,0.367"/>
+        </Canvas>
+
+        <TabControl Grid.Row="2" x:Name="tabGroup">
+            <TabItem Header="Search Results" x:Name="tabSearch">
+                <ListBox x:Name="lstSearchResults"/>
+            </TabItem>
             <TabItem Header="Item" x:Name="tabItem">
                 <Grid Background="#FFE5E5E5">
                     <Grid.ColumnDefinitions>
@@ -42,7 +52,7 @@
                 <Grid Background="#FFE5E5E5"/>
             </TabItem>
         </TabControl>
-        <StatusBar Grid.Row="2">
+        <StatusBar Grid.Row="3">
             <StatusBarItem HorizontalAlignment="Right">
                 <TextBlock Name="lblVersion" Visibility="Visible" Text="" HorizontalAlignment="Right" />
             </StatusBarItem>

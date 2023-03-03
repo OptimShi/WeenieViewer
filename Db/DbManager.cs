@@ -82,5 +82,25 @@ namespace WeenieViewer.Db
             }
             return results;
         }
+
+        public Dictionary<int, string> SearchForWCID(string WCID)
+        {
+            Dictionary<int, string> results = new Dictionary<int, string>();
+            var command = sqlite.CreateCommand();
+            command.CommandText =
+                $"SELECT `object_Id`, `value` FROM `weenie_properties_string` WHERE `type` = 1 and `object_Id` = '{WCID}' limit 1";
+            //command.Parameters.AddWithValue("$name", name);
+
+            using (var reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    var object_Id = reader.GetInt32(0);
+                    var WeenieName = reader.GetString(1);
+                    results.Add(object_Id, WeenieName);
+                }
+            }
+            return results;
+        }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -40,7 +41,38 @@ namespace WeenieViewer
 
         private void miSearchWeenies_Click(object sender, RoutedEventArgs e)
         {
-            db.SearchForWeenie("asher");
+           
+        }
+
+        public void DoDBSearch(string criteria)
+        {
+            tabGroup.SelectedItem = tabSearch;
+            lstSearchResults.Items.Clear();
+            if (criteria != "")
+            {
+                Dictionary<int, string> searchResults;
+                var isNumeric = int.TryParse(criteria, out _);
+                if (isNumeric)
+                {
+                    searchResults = db.SearchForWCID(criteria);
+                }
+                else
+                {
+                    searchResults = db.SearchForWeenie(criteria);
+                }
+                
+                foreach(var w in searchResults)
+                {
+                    lstSearchResults.Items.Add(w.Value + " (" + w.Key +")");
+                }
+                //MessageBox.Show(searchResults.Count + " results found!");
+            }
+
+        }
+
+        private void txtSearch_KeyDown(object sender, KeyEventArgs e)
+        {
+            DoDBSearch(txtSearch.Text.Trim());
         }
     }
 }
