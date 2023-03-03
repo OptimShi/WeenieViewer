@@ -1,0 +1,51 @@
+﻿<Window x:Class="WeenieViewer.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WeenieViewer"
+        mc:Ignorable="d"
+        Title="Weenie Viewer" Height="450" Width="800">
+    <Grid x:Name="LayoutRoot">
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="20" /><!-- MENU -->
+            <RowDefinition Height=".1*" />
+            <RowDefinition Height="20" /> <!-- STATUSBAR-->
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width=".1*"/>
+        </Grid.ColumnDefinitions>
+
+        <Menu Grid.Row="0">
+            <MenuItem Header="File">
+                <MenuItem x:Name="miExit" Header="Exit" Click="miExit_Click"/>
+            </MenuItem>
+            <MenuItem Header="Search">
+                <MenuItem x:Name="miSearchWeenies" Header="Weenies..." Click="miSearchWeenies_Click"/>
+            </MenuItem>
+        </Menu>
+        
+        
+        
+        <TabControl Grid.Row="1" x:Name="tabGroupWeenie" Visibility="Hidden">
+            <TabItem Header="Item" x:Name="tabItem">
+                <Grid Background="#FFE5E5E5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="32*"/>
+                        <ColumnDefinition Width="55*"/>
+                        <ColumnDefinition Width="707*"/>
+                    </Grid.ColumnDefinitions>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Properties" x:Name="tabProperties">
+                <Grid Background="#FFE5E5E5"/>
+            </TabItem>
+        </TabControl>
+        <StatusBar Grid.Row="2">
+            <StatusBarItem HorizontalAlignment="Right">
+                <TextBlock Name="lblVersion" Visibility="Visible" Text="" HorizontalAlignment="Right" />
+            </StatusBarItem>
+        </StatusBar>
+    </Grid>
+</Window>
