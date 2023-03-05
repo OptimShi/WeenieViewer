@@ -10,26 +10,19 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
 using System.Windows.Shapes;
 
 namespace WeenieViewer
 {
     /// <summary>
-    /// Interaction logic for dlgSearch.xaml
+    /// Interaction logic for TabWeenie.xaml
     /// </summary>
-    public partial class dlgSearch : Window
+    public partial class TabWeenie : UserControl
     {
-        public string SearchCriteria = "";
-        
-        public dlgSearch()
+        public TabWeenie()
         {
             InitializeComponent();
-        }
-
-        private void OK_Click(object sender, RoutedEventArgs e)
-        {
-            SearchCriteria = txtSearch.Text;
-            Close();
         }
     }
 }

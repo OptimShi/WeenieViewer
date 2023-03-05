@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WeenieViewer"
         mc:Ignorable="d"
-        Title="Weenie Viewer" Height="450" Width="800">
+        Title="Weenie Viewer" Height="450" Width="855">
     <Grid x:Name="LayoutRoot">
 
         <Grid.RowDefinitions>
@@ -24,37 +24,29 @@
                 <MenuItem x:Name="miExit" Header="Exit" Click="miExit_Click"/>
             </MenuItem>
             <MenuItem Header="Search">
-                <MenuItem x:Name="miSearchWeenies" Header="Weenies..." Click="miSearchWeenies_Click"/>
+                <MenuItem x:Name="miSearchWeenies" Header="Weenies..."/>
             </MenuItem>
         </Menu>
-        <Canvas Grid.Row="1" VerticalAlignment="Center" Height="30">
+        <Canvas Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Height="30">
+            <Label Content="Search:" Canvas.Left="10" Canvas.Top="2" VerticalContentAlignment="Center" RenderTransformOrigin="1.567,0.367" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+            <TextBox x:Name="txtSearch" Text="Asheron" Canvas.Left="63" Canvas.Top="6" HorizontalAlignment="Left" Height="18" VerticalAlignment="Top" Width="137"/>
+            <Button x:Name="btnCloseTab" Content="X" Canvas.Right="10" Canvas.Top="7" FontFamily="Arial Black" ToolTip="Close Tab" BorderBrush="#06707070" Click="btnCloseTab_Click" />
             <Canvas.Background>
                 <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.ControlLightColorKey}}"/>
             </Canvas.Background>
-            <TextBox x:Name="txtSearch" Text="This is my text" Canvas.Left="63" Canvas.Top="6" HorizontalAlignment="Left" Height="18" VerticalAlignment="Center" Width="137" KeyDown="txtSearch_KeyDown"/>
-            <Label Content="Search:" Canvas.Left="10" Canvas.Top="2" VerticalContentAlignment="Center" RenderTransformOrigin="1.567,0.367"/>
         </Canvas>
 
-        <TabControl Grid.Row="2" x:Name="tabGroup">
+        <TabControl Grid.Row="2" x:Name="tabGroup" SelectionChanged="tabGroup_SelectionChanged">
             <TabItem Header="Search Results" x:Name="tabSearch">
-                <ListBox x:Name="lstSearchResults"/>
-            </TabItem>
-            <TabItem Header="Item" x:Name="tabItem">
-                <Grid Background="#FFE5E5E5">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="32*"/>
-                        <ColumnDefinition Width="55*"/>
-                        <ColumnDefinition Width="707*"/>
-                    </Grid.ColumnDefinitions>
-                </Grid>
-            </TabItem>
-            <TabItem Header="Properties" x:Name="tabProperties">
-                <Grid Background="#FFE5E5E5"/>
+                <ListBox x:Name="lstSearchResults" MouseDoubleClick="lstSearchResults_MouseDoubleClick"/>
             </TabItem>
         </TabControl>
         <StatusBar Grid.Row="3">
+            <StatusBarItem HorizontalAlignment="Left">
+                <TextBlock Name="lblResultsCount" Text="RESULTS" HorizontalAlignment="Left" />
+            </StatusBarItem>
             <StatusBarItem HorizontalAlignment="Right">
-                <TextBlock Name="lblVersion" Visibility="Visible" Text="" HorizontalAlignment="Right" />
+                <TextBlock Name="lblVersion" Text="VERSION INFOMATION" HorizontalAlignment="Right" />
             </StatusBarItem>
         </StatusBar>
     </Grid>
