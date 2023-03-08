@@ -5,19 +5,25 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Data;
 using System.Xml.Linq;
+using WeenieViewer.Db.weenie;
+using WeenieViewer.Enums;
 
 namespace WeenieViewer.Db
 {
-    internal class dbWeenie
+    public class dbWeenie
     {
-        public Dictionary<int, int> Ints;
-        public Dictionary<int, long> Int64s;
-        public Dictionary<int, string> Strings;
-        public Dictionary<int, float> Floats;
-        public Dictionary<int, bool> Bools;
-        public Dictionary<int, int> DIDs;
-        public Dictionary<int, int> IIDs;
+        public Dictionary<PropertyBool, bool> Bools;
+        public Dictionary<PropertyFloat, float> Floats;
+        public Dictionary<PropertyDID, int> DIDs;
+        public Dictionary<PropertyIID, int> IIDs;
+        public Dictionary<PropertyInt, int> Ints;
+        public Dictionary<PropertyInt64, long> Int64s;
+        public Dictionary<PropertyString, string> Strings;
 
+        public int BookMaxPages;
+        public int BookMaxCharsPerPage;
+        public Dictionary<int, BookPageData> BookData;
+        
         public int WeenieType;
         public string WeenieClass;
         public string AppraisalText;

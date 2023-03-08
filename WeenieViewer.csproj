@@ -80,6 +80,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Appraisal\ItemExamine.cs" />
     <Compile Include="Controls\TabWeenie.xaml.cs">
       <DependentUpon>TabWeenie.xaml</DependentUpon>
     </Compile>
@@ -93,6 +94,14 @@
     </Compile>
     <Compile Include="Db\DbManager.cs" />
     <Compile Include="Db\dbWeenie.cs" />
+    <Compile Include="Db\weenie\BookPageData.cs" />
+    <Compile Include="Enums\PropertyBool.cs" />
+    <Compile Include="Enums\PropertyDID.cs" />
+    <Compile Include="Enums\PropertyFloat.cs" />
+    <Compile Include="Enums\PropertyIID.cs" />
+    <Compile Include="Enums\PropertyInt.cs" />
+    <Compile Include="Enums\PropertyInt64.cs" />
+    <Compile Include="Enums\PropertyString.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>

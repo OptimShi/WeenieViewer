@@ -37,6 +37,8 @@ namespace WeenieViewer
             lblVersion.Text = db.Version;
 
             txtSearch.TextChanged += new TextChangedEventHandler(txtSearch_TextChanged);
+            txtSearch.Focus();
+            // txtSearch.Text = "Asheron"; 
         }
 
         private void miExit_Click(object sender, RoutedEventArgs e)
@@ -106,6 +108,8 @@ namespace WeenieViewer
                     TabWeenie weenieTabContent = new TabWeenie();
                     newWeenieTabItem.Content = weenieTabContent;
                     var weenie = db.GetWeenie(Int32.Parse(selectedWCID));
+                    weenieTabContent.DisplayWeenie(weenie);
+
                     tabGroup.Items.Add(newWeenieTabItem);
                     tabGroup.SelectedItem = newWeenieTabItem;
                 }
@@ -124,11 +128,13 @@ namespace WeenieViewer
             TabItem ti = tabGroup.SelectedItem as TabItem;
             if(ti == null || ti.Name == "tabSearch")
             {
-                btnCloseTab.Visibility = Visibility.Hidden;
+                btnCloseTab.Visibility = Visibility.Collapsed;
+                lblResultsCount.Visibility = Visibility.Visible;
             }
             else
             {
                 btnCloseTab.Visibility = Visibility.Visible;
+                lblResultsCount.Visibility = Visibility.Collapsed;
             }
         }
 
@@ -137,6 +143,11 @@ namespace WeenieViewer
             TabItem ti = tabGroup.SelectedItem as TabItem;
             tabGroup.Items.Remove(ti);
             e.Handled = true;
+        }
+
+        private void miSearchWeenies_Click(object sender, RoutedEventArgs e)
+        {
+            tabGroup.SelectedItem = tabSearch;
         }
     }
 }

@@ -24,12 +24,12 @@
                 <MenuItem x:Name="miExit" Header="Exit" Click="miExit_Click"/>
             </MenuItem>
             <MenuItem Header="Search">
-                <MenuItem x:Name="miSearchWeenies" Header="Weenies..."/>
+                <MenuItem x:Name="miSearchWeenies" Header="Weenies..." Click="miSearchWeenies_Click"/>
             </MenuItem>
         </Menu>
         <Canvas Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Height="30">
             <Label Content="Search:" Canvas.Left="10" Canvas.Top="2" VerticalContentAlignment="Center" RenderTransformOrigin="1.567,0.367" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-            <TextBox x:Name="txtSearch" Text="Asheron" Canvas.Left="63" Canvas.Top="6" HorizontalAlignment="Left" Height="18" VerticalAlignment="Top" Width="137"/>
+            <TextBox x:Name="txtSearch" Text="" Canvas.Left="63" Canvas.Top="6" HorizontalAlignment="Left" Height="18" VerticalAlignment="Top" Width="137"/>
             <Button x:Name="btnCloseTab" Content="X" Canvas.Right="10" Canvas.Top="7" FontFamily="Arial Black" ToolTip="Close Tab" BorderBrush="#06707070" Click="btnCloseTab_Click" />
             <Canvas.Background>
                 <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.ControlLightColorKey}}"/>

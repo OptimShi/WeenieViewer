@@ -1,7 +1,7 @@
 # WeenieViewer
 
-* ACE Database source: https://github.com/ACEmulator/ACE-World-16PY-Patches
-* Converted ACE database into SQLite format using https://github.com/dumblob/mysql2sqlite
+* Original ACE MySQL Database source: https://github.com/ACEmulator/ACE-World-16PY-Patches
+* Converted ACE database into SQLite format using a purpose built tool: https://github.com/OptimShi/MySQL2SQLite
 
 ## What is it?
 
@@ -11,4 +11,4 @@ WeenieViewer is a very basic tool to view different weenies (items, generators, 
 
 ## How to use?
 
-Program will attempt to open the sqlite database on load (if using the source, a copy of this database can be found in the Releases as part of the binary package). Enter a search term into the box and it will automatically search and filter as you type. Double click an result to open it and view more details (which does not actually display any details).
+Program will attempt to open the sqlite database on load (if using the source, a copy of this database can be found in the Releases as part of the binary package). Enter a search term into the box and it will automatically search and filter as you type. Double click an result to open it and view more details.

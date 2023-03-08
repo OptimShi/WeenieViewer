@@ -10,6 +10,8 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Markup;
 using System.Xml.Linq;
+using WeenieViewer.Db.weenie;
+using WeenieViewer.Enums;
 
 namespace WeenieViewer.Db
 {
@@ -21,7 +23,7 @@ namespace WeenieViewer.Db
         public void Connect()
         {
             string dbName = Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "ace_world.db");
-            dbName = "D:\\Web Development\\sqlite\\ace_world.db";
+            //dbName = "D:\\Web Development\\sqlite\\ace_world.db"; // For Testing Purposes
             if (!File.Exists(dbName))
             {
                 //throw new FileNotFoundException("Could Not Find 'ace_world.db'");
@@ -119,21 +121,47 @@ namespace WeenieViewer.Db
                 }
             }
 
-
             dbWeenie weenie = new dbWeenie();
+
+            command.Reset();
+            command = sqlite.CreateCommand();
+            command.CommandText = $"SELECT * FROM `weenie` where `class_Id` = @wcid limit 1;";
+            command.Parameters.AddWithValue("@wcid", wcid);
+            using (var reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    weenie.WeenieClass = reader.GetString(reader.GetOrdinal("class_Name"));
+                    weenie.WeenieType = reader.GetInt32(reader.GetOrdinal("type"));
+                }
+            }
+
+            command.Reset();
+            command = sqlite.CreateCommand();
+            command.CommandText = $"SELECT count(*) as myCount FROM `weenie_properties_book_page_data`;";
+            using (var reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    var counter = reader.GetInt32(reader.GetOrdinal("myCount"));
+                }
+            }
+
             weenie.Bools = _GetBools(wcid);
-            weenie.DIDs = _GetInts(wcid, "weenie_properties_d_i_d");
+            weenie.DIDs = _GetDIDs(wcid);
             weenie.Floats = _GetFloats(wcid);
             weenie.Ints = _GetInts(wcid);
             weenie.Int64s = _GetInt64s(wcid);
-            weenie.IIDs = _GetInts(wcid, "weenie_properties_i_i_d");
+            weenie.IIDs = _GetIIDs(wcid);
             weenie.Strings = _GetStrings(wcid);
+            weenie.BookData = _GetBookPageData(wcid);
+            
             return weenie;
         }
 
-        private Dictionary<int, bool> _GetBools(int wcid)
+        private Dictionary<PropertyBool, bool> _GetBools(int wcid)
         {
-            Dictionary<int, bool> results = new Dictionary<int, bool>();
+            Dictionary<PropertyBool, bool> results = new Dictionary<PropertyBool, bool>();
             var command = sqlite.CreateCommand();
             command.CommandText = $"SELECT `type`, `value` FROM `weenie_properties_bool` WHERE `object_Id` = @wcid";
             command.Parameters.AddWithValue("@wcid", wcid);
@@ -143,16 +171,17 @@ namespace WeenieViewer.Db
                 while (reader.Read())
                 {
                     int key = reader.GetInt32(reader.GetOrdinal("type"));
-                    string value = reader.GetString(reader.GetOrdinal("value"));
-                    results.Add(key, key == 1);
+                    int value = reader.GetInt32(reader.GetOrdinal("type"));
+                    results.Add((PropertyBool)key, value == 1);
                 }
             }
 
             return results;
         }
-        private Dictionary<int, float> _GetFloats(int wcid)
+
+        private Dictionary<PropertyFloat, float> _GetFloats(int wcid)
         {
-            Dictionary<int, float> results = new Dictionary<int, float>();
+            Dictionary<PropertyFloat, float> results = new Dictionary<PropertyFloat, float>();
             var command = sqlite.CreateCommand();
             command.CommandText = $"SELECT `type`, `value` FROM `weenie_properties_float` WHERE `object_Id` = @wcid";
             command.Parameters.AddWithValue("@wcid", wcid);
@@ -163,18 +192,18 @@ namespace WeenieViewer.Db
                 {
                     int key = reader.GetInt32(reader.GetOrdinal("type"));
                     float value = reader.GetFloat(reader.GetOrdinal("value"));
-                    results.Add(key, value);
+                    results.Add((PropertyFloat)key, value);
                 }
             }
 
             return results;
         }
 
-        private Dictionary<int, int> _GetInts(int wcid, string table = "weenie_properties_int")
+        private Dictionary<PropertyInt, int> _GetInts(int wcid)
         {
-            Dictionary<int, int> results = new Dictionary<int, int>();
+            Dictionary<PropertyInt, int> results = new Dictionary<PropertyInt, int>();
             var command = sqlite.CreateCommand();
-            command.CommandText = $"SELECT `type`, `value` FROM `{table}` WHERE `object_Id` = @wcid";
+            command.CommandText = $"SELECT `type`, `value` FROM `weenie_properties_int` WHERE `object_Id` = @wcid";
             command.Parameters.AddWithValue("@wcid", wcid);
             command.CommandType = CommandType.Text;
 
@@ -184,16 +213,58 @@ namespace WeenieViewer.Db
                 {
                     int key = reader.GetInt32(reader.GetOrdinal("type"));
                     int value = reader.GetInt32(reader.GetOrdinal("value"));
-                    results.Add(key, value);
+                    results.Add((PropertyInt)key, value);
                 }
             }
 
             return results;
         }
 
-        private Dictionary<int, long> _GetInt64s(int wcid)
+        private Dictionary<PropertyIID, int> _GetIIDs(int wcid)
         {
-            Dictionary<int, long> results = new Dictionary<int, long>();
+            Dictionary<PropertyIID, int> results = new Dictionary<PropertyIID, int>();
+            var command = sqlite.CreateCommand();
+            command.CommandText = $"SELECT `type`, `value` FROM `weenie_properties_i_i_d` WHERE `object_Id` = @wcid";
+            command.Parameters.AddWithValue("@wcid", wcid);
+            command.CommandType = CommandType.Text;
+
+            using (var reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    int key = reader.GetInt32(reader.GetOrdinal("type"));
+                    int value = reader.GetInt32(reader.GetOrdinal("value"));
+                    results.Add((PropertyIID)key, value);
+                }
+            }
+
+            return results;
+        }
+
+        private Dictionary<PropertyDID, int> _GetDIDs(int wcid)
+        {
+            Dictionary<PropertyDID, int> results = new Dictionary<PropertyDID, int>();
+            var command = sqlite.CreateCommand();
+            command.CommandText = $"SELECT `type`, `value` FROM `weenie_properties_d_i_d` WHERE `object_Id` = @wcid";
+            command.Parameters.AddWithValue("@wcid", wcid);
+            command.CommandType = CommandType.Text;
+
+            using (var reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    int key = reader.GetInt32(reader.GetOrdinal("type"));
+                    int value = reader.GetInt32(reader.GetOrdinal("value"));
+                    results.Add((PropertyDID)key, value);
+                }
+            }
+
+            return results;
+        }
+
+        private Dictionary<PropertyInt64, long> _GetInt64s(int wcid)
+        {
+            Dictionary<PropertyInt64, long> results = new Dictionary<PropertyInt64, long>();
             var command = sqlite.CreateCommand();
             command.CommandText = $"SELECT `type`, `value` FROM `weenie_properties_int64` WHERE `object_Id` = @wcid";
             command.Parameters.AddWithValue("@wcid", wcid);
@@ -204,7 +275,7 @@ namespace WeenieViewer.Db
                 {
                     int key = reader.GetInt32(reader.GetOrdinal("type"));
                     long value = reader.GetInt64(reader.GetOrdinal("value"));
-                    results.Add(key, value);
+                    results.Add((PropertyInt64)key, value);
                 }
             }
 
@@ -212,9 +283,9 @@ namespace WeenieViewer.Db
         }
 
 
-        private Dictionary<int, string> _GetStrings(int wcid)
+        private Dictionary<PropertyString, string> _GetStrings(int wcid)
         {
-            Dictionary<int, string> results = new Dictionary<int, string>();
+            Dictionary<PropertyString, string> results = new Dictionary<PropertyString, string>();
             var command = sqlite.CreateCommand();
             command.CommandText = $"SELECT `type`, `value` FROM `weenie_properties_string` WHERE `object_Id` = @wcid";
             command.Parameters.Add(new SQLiteParameter("@wcid", wcid));
@@ -225,7 +296,36 @@ namespace WeenieViewer.Db
                 {
                     int key = reader.GetInt32(reader.GetOrdinal("type"));
                     string value = reader.GetString(reader.GetOrdinal("value"));
-                    results.Add(key, value);
+                    results.Add((PropertyString)key, value);
+                }
+            }
+
+            return results;
+        }
+
+        private Dictionary<int, BookPageData> _GetBookPageData(int wcid)
+        {
+            Dictionary<int, BookPageData> results = new Dictionary<int, BookPageData>();
+            var command = sqlite.CreateCommand();
+            command.CommandText = $"SELECT * FROM `weenie_properties_book_page_data` WHERE `object_Id` = @wcid";
+            command.Parameters.Add(new SQLiteParameter("@wcid", wcid));
+
+            using (var reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    BookPageData page = new BookPageData();
+                    page.PageId = reader.GetInt32(reader.GetOrdinal("page_Id"));
+                    page.AuthorId= reader.GetInt32(reader.GetOrdinal("author_Id"));
+                    page.AuthorName = reader.GetString(reader.GetOrdinal("author_Name"));
+                    page.AuthorAccount = reader.GetString(reader.GetOrdinal("author_Account"));
+
+                    var ignore = reader.GetInt32(reader.GetOrdinal("ignore_Author"));
+                    page.IgnoreAuthor = ignore == 1;
+
+                    page.PageText = reader.GetString(reader.GetOrdinal("page_Text"));
+
+                    results.Add(page.PageId, page);
                 }
             }
 
