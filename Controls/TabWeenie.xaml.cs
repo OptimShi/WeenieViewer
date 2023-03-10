@@ -100,7 +100,8 @@ namespace WeenieViewer
                 dgProps.Items.Add(item);
             }
 
-            tabProps.IsSelected = true;
+            //tabProps.IsSelected = true;
+            tabItem.IsSelected = true;
         }
     }
 }

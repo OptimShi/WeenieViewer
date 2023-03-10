@@ -23,7 +23,7 @@ namespace WeenieViewer.Db
         public void Connect()
         {
             string dbName = Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "ace_world.db");
-            //dbName = "D:\\Web Development\\sqlite\\ace_world.db"; // For Testing Purposes
+            dbName = "D:\\Web Development\\sqlite\\ace_world.db"; // For Testing Purposes
             if (!File.Exists(dbName))
             {
                 //throw new FileNotFoundException("Could Not Find 'ace_world.db'");
