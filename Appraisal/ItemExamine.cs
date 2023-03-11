@@ -455,85 +455,99 @@ namespace WeenieViewer.Appraisal
             int _ammoType = 0;
             InqInt(PropertyInt.AMMO_TYPE_INT, ref _ammoType);
 
-            if ((_valid_locations & 0x3F00000) > 0)
+            if ((_valid_locations & 0x3F00000) > 0) // Weapon Slot
             {
                 if ((_valid_locations & 0x200000) > 0)
                 {
                     int shieldLevel = -1;
                     if (InqInt((PropertyInt)0x1Cu, ref shieldLevel))
-                    {
                         AddItemInfo($"Base Shield Level: {shieldLevel}");
+                    else
+                        AddItemInfo("Shield Level: Unknown");
+                }
+
+                int itemType = 0;
+                InqInt(PropertyInt.ITEM_TYPE_INT, ref itemType);
+                // Check if this is a weapon
+                if(itemType == 1 || itemType == 256 || itemType == 257 || itemType == 32768 || itemType == 0x8101){
+                    // AMMO Slot
+                    if ((_valid_locations & 0x400000) > 0)
+                    {
+                        switch (_ammoType)
+                        {
+                            case 1:
+                                AddItemInfo("Uses arrows as ammunition.");
+                                break;
+                            case 2:
+                                AddItemInfo("Uses quarrels as ammunition.");
+                                break;
+                            case 4:
+                                AddItemInfo("Uses atlatl darts as ammunition.");
+                                break;
+                        }
+                        return;
+                    }
+                    else
+                    {
+                        switch (_ammoType)
+                        {
+                            case 1:
+                                AddItemInfo("Used as ammunition by bows.");
+                                break;
+                            case 2:
+                                AddItemInfo("Used as ammunition by crossbows.");
+                                break;
+                            case 4:
+                                AddItemInfo("Uses atlatl darts as atlatls.");
+                                break;
+                        }
                     }
                 }
+
+                var v9 = _valid_locations & 0x400000;
+                int oldSkill_Id = 0;
+
+                int iWeaponSkill = 0;
+                if(InqInt(PropertyInt.WEAPON_SKILL_INT, ref iWeaponSkill)){
+                    string ps = "Skill: ";
+                    string rhs = "";
+                    if (InqInt((PropertyInt)0x161u, ref oldSkill_Id)){
+                        switch (oldSkill_Id)
+                        {
+                            case 1: rhs = " (Unarmed Weapon)"; break;
+                            case 2: rhs = " (Sword)"; break;
+                            case 3: rhs = " (Axe)"; break;
+                            case 4: rhs = " (Mace)"; break;
+                            case 5: rhs = " (Spear)"; break;
+                            case 6: rhs = " (Dagger)"; break;
+                            case 7: rhs = " (Staff)"; break;
+                            case 8: rhs = " (Bow)"; break;
+                            case 9: rhs = " (Crossbow)"; break;
+                            case 10: rhs = " (Thrown)"; break;
+                        }
+                    }
+                    string weaponSkill = "";
+                    SkillToString((Skill)iWeaponSkill, ref weaponSkill);
+                    AddItemInfo(ps + weaponSkill + rhs);
+                }
+
+                var IsMissile = ((_valid_locations & 0x400000) > 0) && (_ammoType > 0);
+                string damageTxt;
+                if (IsMissile)
+                    damageTxt = "Damage Bonus: ";
                 else
-                    AddItemInfo("Shield Level: Unknown");
+                    damageTxt = "Damage: ";
 
-                if ((_valid_locations & 0x400000) > 0)
+                int weaponDamage = 0;
+                int _damageType = 0;
+                
+                InqInt((PropertyInt)45, ref _damageType);
+                if(InqInt((PropertyInt)44, ref weaponDamage))
                 {
-                    switch (_ammoType)
-                    {
-                        case 1:
-                            AddItemInfo("Uses arrows as ammunition.");
-                            break;
-                        case 2:
-                            AddItemInfo("Uses quarrels as ammunition.");
-                            break;
-                        case 4:
-                            AddItemInfo("Uses atlatl darts as ammunition.");
-                            break;
-                    }
-                    return;
-                }
-                else
-                {
-                    switch (_ammoType)
-                    {
-                        case 1:
-                            AddItemInfo("Used as ammunition by bows.");
-                            break;
-                        case 2:
-                            AddItemInfo("Used as ammunition by crossbows.");
-                            break;
-                        case 4:
-                            AddItemInfo("Uses atlatl darts as atlatls.");
-                            break;
-                    }
-                    return;
+                    if (weaponDamage < 0)
+                        AddItemInfo(damageTxt + "Unknown");
 
                 }
-            }
-
-            var v9 = _valid_locations & 0x400000;
-            var IsMissile = ((_valid_locations & 0x400000) > 0) && (_ammoType > 0);
-            int oldSkill_Id = 0;
-
-            int iWeaponSkill = 0;
-            if(InqInt(PropertyInt.WEAPON_SKILL_INT, ref iWeaponSkill)){
-                string ps = "Skill: ";
-                string rhs = "";
-                if (InqInt((PropertyInt)0x161u, ref oldSkill_Id)){
-                    switch (oldSkill_Id)
-                    {
-                        case 1: rhs = " (Unarmed Weapon)"; break;
-                        case 2: rhs = " (Sword)"; break;
-                        case 3: rhs = " (Axe)"; break;
-                        case 4: rhs = " (Mace)"; break;
-                        case 5: rhs = " (Spear)"; break;
-                        case 6: rhs = " (Dagger)"; break;
-                        case 7: rhs = " (Staff)"; break;
-                        case 8: rhs = " (Bow)"; break;
-                        case 9: rhs = " (Crossbow)"; break;
-                        case 10: rhs = " (Thrown)"; break;
-                    }
-                }
-                string weaponSkill = "";
-                SkillToString((Skill)iWeaponSkill, ref weaponSkill);
-                AddItemInfo(ps + weaponSkill + rhs);
-            }
-
-
-            if (IsMissile)
-            {
 
             }
         }
