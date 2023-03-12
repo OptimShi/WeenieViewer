@@ -66,7 +66,18 @@ namespace WeenieViewer.Enums
     }
 
     public static class SkillExtensions
-        { 
+    {
+        /// <summary>
+        /// Will add a space infront of capital letter words in a string
+        /// Taken from ACE
+        /// </summary>
+        /// <param name="skill"></param>
+        /// <returns>string with spaces infront of capital letters</returns>
+        public static string ToSentence(this Skill skill)
+        {
+            return new string(skill.ToString().ToCharArray().SelectMany((c, i) => i > 0 && char.IsUpper(c) ? new char[] { ' ', c } : new char[] { c }).ToArray());
+        }
+
         public static string GetSkillName(Skill skill)
         {
             switch ((int)skill)

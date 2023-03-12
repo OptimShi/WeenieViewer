@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -58,6 +60,7 @@ namespace WeenieViewer.Appraisal
             if (hasSet || hasRatings)
                 AddItemInfo(""); // Add a blank line
             Appraisal_ShowWeaponAndArmorData();
+            Appraisal_ShowDefenseModData();
         }
         /*
          * 	Line  10308: int __thiscall AppraisalProfile::InqCreature(AppraisalProfile *this, CreatureAppraisalProfile *cap); // idb
@@ -139,6 +142,70 @@ namespace WeenieViewer.Appraisal
             }
             return false;
         }
+
+        private string ModifierToString(float rMod)
+        {
+		    var v1 = 1 - rMod;
+            if (v1 < 1){
+			    v1 = v1 * -1;
+            }
+            string g_szPecentText = $"{Math.Floor(v1 * 100.0 + 0.5)}%";
+            return g_szPecentText;
+        }
+
+        private string SmallModifierToString(float rMod)
+        {
+		    var v1 = 1.0 - rMod;
+            if (1.0 - rMod < 0.0 )
+			    v1 = v1 * -1;
+
+		    string g_szPecentText = $"{(v1 * 100.0):N1}%";
+            return g_szPecentText;
+        }
+
+        private string WeaponTimeToString(float wtime)
+        {
+            if (wtime < 11)
+			    return "Very Fast";
+            else if(wtime < 31)
+			    return "Fast";
+            else if(wtime < 50)
+                return "Average";
+            else if(wtime < 80)
+                return "Slow";
+            else
+			    return "Very Slow";
+        }
+
+        private string ClothingPriorityToString(int priority)
+        {
+		    var byte1 = (priority >> 8 & 0xFF);
+		    string cover = "";
+            if ((byte1 & 0x40) != 0)
+			    cover += "Head, ";
+            if ((priority & 8) != 0 || (priority & 0x400) != 0)
+                cover += "Chest, ";
+            if ((priority & 0x10) != 0 || (byte1 & 8) != 0)
+                cover += "Abdomen, ";
+            if ((priority & 0x20) != 0 || (byte1 & 0x10) != 0)
+                cover += "Upper Arms, ";
+            if ((priority & 0x40) != 0 || (byte1 & 0x20) != 0)
+                cover += "Lower Arms, ";
+            if ((priority & 0x8000) != 0)
+                cover += "Hands, ";
+            if ((priority & 0x2) != 0 || (byte1 & 0x1) != 0)
+                cover += "Upper Legs, ";
+            if ((priority & 0x4) != 0 || (byte1 & 0x2) != 0)
+                cover += "Lower Legs, ";
+            if ((priority & 0x10000) != 0)
+                cover += "Feet, ";
+            cover = cover.TrimEnd(new Char[] { ',', ' ' }); // trims comma and space
+            if (cover != "")
+                return "Covers " + cover;
+            else
+                return "";
+        }
+
         private void AddItemInfo(string text, bool surpressDoubleSpacing = true)
         {
             Text += text + "\n";
@@ -146,7 +213,7 @@ namespace WeenieViewer.Appraisal
         }
         private bool SkillToString(Skill skill, ref string value)
         {
-            value = SkillExtensions.GetSkillName(skill);
+            value = SkillExtensions.ToSentence(skill);
             if(value != "")
                 return true;
 
@@ -466,89 +533,205 @@ namespace WeenieViewer.Appraisal
                         AddItemInfo("Shield Level: Unknown");
                 }
 
+                var IsMissile = ((_valid_locations & 0x400000) > 0) && (_ammoType > 0);
+
                 int itemType = 0;
                 InqInt(PropertyInt.ITEM_TYPE_INT, ref itemType);
                 // Check if this is a weapon
-                if(itemType == 1 || itemType == 256 || itemType == 257 || itemType == 32768 || itemType == 0x8101){
-                    // AMMO Slot
-                    if ((_valid_locations & 0x400000) > 0)
+                if (itemType == 1 || itemType == 256 || itemType == 257 || itemType == 32768 || itemType == 0x8101)
+                {
+                    bool missileSlot = (_valid_locations & 0x400000) > 0;
+                    int oldSkill_Id = 0;
+
+                    int iWeaponSkill = 0;
+                    if (InqInt(PropertyInt.WEAPON_SKILL_INT, ref iWeaponSkill))
                     {
-                        switch (_ammoType)
+                        string ps = "Skill: ";
+                        string rhs = "";
+                        if (InqInt((PropertyInt)0x161u, ref oldSkill_Id))
                         {
-                            case 1:
-                                AddItemInfo("Uses arrows as ammunition.");
-                                break;
-                            case 2:
-                                AddItemInfo("Uses quarrels as ammunition.");
-                                break;
-                            case 4:
-                                AddItemInfo("Uses atlatl darts as ammunition.");
-                                break;
+                            switch (oldSkill_Id)
+                            {
+                                case 1: rhs = " (Unarmed Weapon)"; break;
+                                case 2: rhs = " (Sword)"; break;
+                                case 3: rhs = " (Axe)"; break;
+                                case 4: rhs = " (Mace)"; break;
+                                case 5: rhs = " (Spear)"; break;
+                                case 6: rhs = " (Dagger)"; break;
+                                case 7: rhs = " (Staff)"; break;
+                                case 8: rhs = " (Bow)"; break;
+                                case 9: rhs = " (Crossbow)"; break;
+                                case 10: rhs = " (Thrown)"; break;
+                            }
                         }
-                        return;
+                        string weaponSkill = "";
+                        SkillToString((Skill)iWeaponSkill, ref weaponSkill);
+                        AddItemInfo(ps + weaponSkill + rhs);
+                    }
+
+                    string damageTxt;
+                    if (IsMissile)
+                        damageTxt = "Damage Bonus: ";
+                    else
+                        damageTxt = "Damage: ";
+
+                    int weaponDamage = 0;
+                    int _damageType = 0;
+
+                    InqInt((PropertyInt)45, ref _damageType);
+                    if (InqInt((PropertyInt)44, ref weaponDamage))
+                    {
+                        if (weaponDamage < 0)
+                            AddItemInfo(damageTxt + "Unknown");
+                        else
+                        {
+                            string Dest = "";
+                            string buf;
+                            if (!IsMissile)
+                            {
+                                Dest = ", unknown type";
+                                if (weaponDamage > 0)
+                                {
+                                    buf = DamageTypeExtensions.GetDamageTypes((DamageType)_damageType);
+                                    Dest = $", {buf}";
+                                }
+                            }
+                            float damage_variance = 0;
+                            InqFloat((PropertyFloat)22, ref damage_variance);
+                            float rhs = (1.0f - damage_variance) * weaponDamage;
+
+                            string ability_txt;
+                            if ((weaponDamage - rhs) > 0.00019999999)
+                            {
+                                if (rhs >= 10.0)
+                                    ability_txt = $"{damageTxt}{rhs:g4} - {weaponDamage}{Dest}";
+                                else
+                                    ability_txt = $"{damageTxt}{rhs:g3} - {weaponDamage}{Dest}";
+                            }
+                            else
+                            {
+                                ability_txt = $"{damageTxt}{weaponDamage}{Dest}";
+                            }
+                            AddItemInfo(ability_txt);
+                        }
+                    }
+             
+                int retval = 0;
+                InqInt((PropertyInt)0xCCu, ref retval); // ELEMENTAL_DAMAGE_BONUS_INT
+                if (retval > 0)
+                {
+                    string damageType = DamageTypeExtensions.GetDamageTypes((DamageType)_damageType);
+                    string rhs = $"Elemental Damage Bonus: {retval}, {damageType}.";
+                    AddItemInfo(rhs);
+                }
+
+                if (IsMissile)
+                {
+                    float damageMod = 0;
+                    if (InqFloat(PropertyFloat.DAMAGE_MOD_FLOAT, ref damageMod)) {
+                        string modifier_txt = ModifierToString(damageMod);
+                        AddItemInfo($"Damage Modifier: {modifier_txt}.");
+                    }
+                }
+
+                if((_valid_locations & 0x2500000) > 0) // Melee, Missile, Two-Handed
+                {
+                    int wap_weapon_time = 0;
+                    InqInt(PropertyInt.WEAPON_TIME_INT, ref wap_weapon_time);
+                    if(wap_weapon_time <= 0)
+                    {
+                        AddItemInfo("Speed:  Unknown");
+                        if (IsMissile)
+                            AddItemInfo("Range:  Unknown");
                     }
                     else
                     {
-                        switch (_ammoType)
+                        string ps = "Speed: " + WeaponTimeToString(wap_weapon_time) + " (" + wap_weapon_time + ")";
+                        AddItemInfo(ps);
+                        if (IsMissile)
                         {
-                            case 1:
-                                AddItemInfo("Used as ammunition by bows.");
-                                break;
-                            case 2:
-                                AddItemInfo("Used as ammunition by crossbows.");
-                                break;
-                            case 4:
-                                AddItemInfo("Uses atlatl darts as atlatls.");
-                                break;
+                            float wap_max_velocity = 0;
+                            InqFloat(PropertyFloat.MAXIMUM_VELOCITY_FLOAT, ref wap_max_velocity);
+                            double fRange = Math.Pow(wap_max_velocity, 2.0) * 0.1020408163265306 * 1.094;
+                            if (fRange > 85) fRange = 85; // Max Range
+
+                            double range;
+                            if (fRange >= 10)
+                                range = fRange - (int)fRange % 5;
+                            else
+                                range = fRange;
+
+                            AddItemInfo($"Range: {Math.Floor(range):N0} yds.");
                         }
+                    }
                     }
                 }
 
-                var v9 = _valid_locations & 0x400000;
-                int oldSkill_Id = 0;
-
-                int iWeaponSkill = 0;
-                if(InqInt(PropertyInt.WEAPON_SKILL_INT, ref iWeaponSkill)){
-                    string ps = "Skill: ";
-                    string rhs = "";
-                    if (InqInt((PropertyInt)0x161u, ref oldSkill_Id)){
-                        switch (oldSkill_Id)
-                        {
-                            case 1: rhs = " (Unarmed Weapon)"; break;
-                            case 2: rhs = " (Sword)"; break;
-                            case 3: rhs = " (Axe)"; break;
-                            case 4: rhs = " (Mace)"; break;
-                            case 5: rhs = " (Spear)"; break;
-                            case 6: rhs = " (Dagger)"; break;
-                            case 7: rhs = " (Staff)"; break;
-                            case 8: rhs = " (Bow)"; break;
-                            case 9: rhs = " (Crossbow)"; break;
-                            case 10: rhs = " (Thrown)"; break;
-                        }
-                    }
-                    string weaponSkill = "";
-                    SkillToString((Skill)iWeaponSkill, ref weaponSkill);
-                    AddItemInfo(ps + weaponSkill + rhs);
-                }
-
-                var IsMissile = ((_valid_locations & 0x400000) > 0) && (_ammoType > 0);
-                string damageTxt;
-                if (IsMissile)
-                    damageTxt = "Damage Bonus: ";
-                else
-                    damageTxt = "Damage: ";
-
-                int weaponDamage = 0;
-                int _damageType = 0;
-                
-                InqInt((PropertyInt)45, ref _damageType);
-                if(InqInt((PropertyInt)44, ref weaponDamage))
+                if ((_valid_locations & 0x400000) > 0)
                 {
-                    if (weaponDamage < 0)
-                        AddItemInfo(damageTxt + "Unknown");
-
+                    switch (_ammoType)
+                    {
+                        case 1:
+                            AddItemInfo("Uses arrows as ammunition.");
+                            break;
+                        case 2:
+                            AddItemInfo("Uses quarrels as ammunition.");
+                            break;
+                        case 4:
+                            AddItemInfo("Uses atlatl darts as ammunition.");
+                            break;
+                    }
+                }
+                else
+                {
+                    switch (_ammoType)
+                    {
+                        case 1:
+                            AddItemInfo("Used as ammunition by bows.");
+                            break;
+                        case 2:
+                            AddItemInfo("Used as ammunition by crossbows.");
+                            break;
+                        case 4:
+                            AddItemInfo("Uses atlatl darts as atlatls.");
+                            break;
+                    }
                 }
 
+                /*
+                 * _sprintf(&ability_txt, "Bonus to Attack Skill: %s%d%%.", v21, (unsigned __int64)(v22 * 100.0 + 0.5));
+                 */
+            }
+            /*
+             * Note Quite Sure what this is? Adds "Covers: <area>" for weapons??
+            if (lm & 0x8007FFF && AppraisalSystem::ClothingPriorityToString(v3->cur_weenobj->pwd._priority, ps))
+            {
+                v33 = ps[0].m_buffer->m_data;
+                ItemExamineUI::AddItemInfo(v3, v33, 0, 1);
+            }
+            */
+
+        }
+
+        void Appraisal_ShowDefenseModData()
+        {
+            float rDefenseModifier = 0;
+            if (InqFloat((PropertyFloat)0x1Du, ref rDefenseModifier) && rDefenseModifier != -1)
+            {
+                string v3 = SmallModifierToString(rDefenseModifier);
+                AddItemInfo($"Bonus to Melee Defense: {v3}.");
+            }
+
+            if (InqFloat((PropertyFloat)0x95u, ref rDefenseModifier) && rDefenseModifier != -1)
+            {
+                string v3 = SmallModifierToString(rDefenseModifier);
+                AddItemInfo($"Bonus to Missile Defense: {v3}.");
+            }
+
+            if (InqFloat((PropertyFloat)0x96u, ref rDefenseModifier) && rDefenseModifier != -1)
+            {
+                string v3 = SmallModifierToString(rDefenseModifier);
+                AddItemInfo($"Bonus to Magic Defense: {v3}.");
             }
         }
     }

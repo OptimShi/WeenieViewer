@@ -41,7 +41,7 @@
     <StartupObject>WeenieViewer.App</StartupObject>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>ico101.ico</ApplicationIcon>
+    <ApplicationIcon>WeenieViewer.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
@@ -95,6 +95,7 @@
     <Compile Include="Db\DbManager.cs" />
     <Compile Include="Db\dbWeenie.cs" />
     <Compile Include="Db\weenie\BookPageData.cs" />
+    <Compile Include="Enums\DamageType.cs" />
     <Compile Include="Enums\PropertyBool.cs" />
     <Compile Include="Enums\PropertyDID.cs" />
     <Compile Include="Enums\PropertyFloat.cs" />
@@ -139,9 +140,14 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
-    <Resource Include="ico101.ico" />
+    <Resource Include="Icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="WeenieViewer.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Enums\WeenieViewer.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

@@ -38,6 +38,8 @@ namespace WeenieViewer
 
             txtSearch.TextChanged += new TextChangedEventHandler(txtSearch_TextChanged);
             txtSearch.Focus();
+
+            SetupHotKeys();
             // txtSearch.Text = "Asheron"; 
         }
 
@@ -148,6 +150,27 @@ namespace WeenieViewer
         private void miSearchWeenies_Click(object sender, RoutedEventArgs e)
         {
             tabGroup.SelectedItem = tabSearch;
+        }
+
+        private void SetupHotKeys()
+        {
+            try
+            {
+                RoutedCommand firstSettings = new RoutedCommand();
+                firstSettings.InputGestures.Add(new KeyGesture(Key.W, ModifierKeys.Control));
+                CommandBindings.Add(new CommandBinding(firstSettings, CloseTab));
+            }
+            catch (Exception Err) { }
+        }
+
+        private void CloseTab(object sender, ExecutedRoutedEventArgs e)
+        {
+            //handler code goes here.
+            TabItem ti = tabGroup.SelectedItem as TabItem;
+            if (ti != null && ti.Name != "tabSearch")
+            {
+                tabGroup.Items.Remove(ti);
+            }
         }
     }
 }
