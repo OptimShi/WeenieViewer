@@ -154,6 +154,8 @@ namespace WeenieViewer.Db
             weenie.Int64s = _GetInt64s(wcid);
             weenie.IIDs = _GetIIDs(wcid);
             weenie.Strings = _GetStrings(wcid);
+            weenie.SpellBook = _GetSpellBook(wcid);
+
             weenie.BookData = _GetBookPageData(wcid);
             
             return weenie;
@@ -297,6 +299,26 @@ namespace WeenieViewer.Db
                     int key = reader.GetInt32(reader.GetOrdinal("type"));
                     string value = reader.GetString(reader.GetOrdinal("value"));
                     results.Add((PropertyString)key, value);
+                }
+            }
+
+            return results;
+        }
+
+        private Dictionary<int, float> _GetSpellBook(int wcid)
+        {
+            Dictionary<int, float> results = new Dictionary<int, float>();
+            var command = sqlite.CreateCommand();
+            command.CommandText = $"SELECT `spell`, `probability` FROM `weenie_properties_spell_book` WHERE `object_Id` = @wcid order by `id`";
+            command.Parameters.Add(new SQLiteParameter("@wcid", wcid));
+
+            using (var reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    int spell = reader.GetInt32(reader.GetOrdinal("spell"));
+                    float probability = reader.GetFloat(reader.GetOrdinal("spell"));
+                    results.Add(spell, probability);
                 }
             }
 

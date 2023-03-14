@@ -12,7 +12,7 @@ using WeenieViewer.Enums;
 
 namespace WeenieViewer.Appraisal
 {
-    public class ItemExamine
+    public partial class ItemExamine
     {
         public string Text;
         private dbWeenie Weenie;
@@ -61,6 +61,31 @@ namespace WeenieViewer.Appraisal
                 AddItemInfo(""); // Add a blank line
             Appraisal_ShowWeaponAndArmorData();
             Appraisal_ShowDefenseModData();
+            Appraisal_ShowArmorMods();
+            Appraisal_ShowShortMagicInfo();
+            Appraisal_ShowSpecialProperties();
+            // Appraisal_ShowUsage();
+            // Appraisal_ShowLevelLimitInfo();
+            // Appraisal_ShowWieldRequirements();
+            // Appraisal_ShowUsageLimitInfo();
+            // Appraisal_ShowItemLevelInfo();
+            // Appraisal_ShowActivationRequirements();
+            // Appraisal_ShowCasterData();
+            // Appraisal_ShowBoostValue();
+            // Appraisal_ShowHealKitValues();
+            // Appraisal_ShowCapacity();
+            // Appraisal_ShowLockAppraiseInfo();
+            // Appraisal_ShowManaStoneInfo();
+            // Appraisal_ShowRemainingUses();
+            // Appraisal_ShowCraftsman();
+
+            bool isSellbable = false;
+            if (InqBool(PropertyBool.IS_SELLABLE_BOOL, ref isSellbable))
+                AddItemInfo("This item cannot be sold.");
+
+            // Appraisal_ShowRareInfo();
+            // Appraisal_ShowMagicInfo();
+            // Appraisal_ShowDescription();
         }
         /*
          * 	Line  10308: int __thiscall AppraisalProfile::InqCreature(AppraisalProfile *this, CreatureAppraisalProfile *cap); // idb
@@ -74,137 +99,6 @@ namespace WeenieViewer.Appraisal
 	Line  10337: int __thiscall AppraisalProfile::InqString(AppraisalProfile *this, unsigned int stype, AC1Legacy::PStringBase<char> *retval); // idb
 
         */
-
-        private bool InqCreature()
-        {
-            return false;
-        }
-        private bool InqArmor()
-        {
-            return false;
-        }
-        private bool InqWeapon()
-        {
-            return false;
-        }
-        private bool InqInt(PropertyInt prop, ref int value)
-        {
-            if (Weenie.Ints.ContainsKey(prop))
-            {
-                value = Weenie.Ints[prop];
-                return true;
-            }
-            return false;
-        }
-        private bool InqInt64(PropertyInt64 prop, ref long value)
-        {
-            if (Weenie.Int64s.ContainsKey(prop))
-            {
-                value = Weenie.Int64s[prop];
-                return true;
-            }
-            return false;
-        }
-        private bool InqBool(PropertyBool prop, ref bool value)
-        {
-            if (Weenie.Bools.ContainsKey(prop))
-            {
-                value = Weenie.Bools[prop];
-                return true;
-            }
-            return false;
-        }
-
-        private bool InqFloat(PropertyFloat prop, ref float value)
-        {
-            if (Weenie.Floats.ContainsKey(prop))
-            {
-                value = Weenie.Floats[prop];
-                return true;
-            }
-            return false;
-        }
-        private bool InqDataID(PropertyDID prop, ref int value)
-        {
-            if (Weenie.DIDs.ContainsKey(prop))
-            {
-                value = Weenie.DIDs[prop];
-                return true;
-            }
-            return false;
-        }
-        private bool InqString(PropertyString prop, ref string value)
-        {
-            if (Weenie.Strings.ContainsKey(prop))
-            {
-                value = Weenie.Strings[prop];
-                return true;
-            }
-            return false;
-        }
-
-        private string ModifierToString(float rMod)
-        {
-		    var v1 = 1 - rMod;
-            if (v1 < 1){
-			    v1 = v1 * -1;
-            }
-            string g_szPecentText = $"{Math.Floor(v1 * 100.0 + 0.5)}%";
-            return g_szPecentText;
-        }
-
-        private string SmallModifierToString(float rMod)
-        {
-		    var v1 = 1.0 - rMod;
-            if (1.0 - rMod < 0.0 )
-			    v1 = v1 * -1;
-
-		    string g_szPecentText = $"{(v1 * 100.0):N1}%";
-            return g_szPecentText;
-        }
-
-        private string WeaponTimeToString(float wtime)
-        {
-            if (wtime < 11)
-			    return "Very Fast";
-            else if(wtime < 31)
-			    return "Fast";
-            else if(wtime < 50)
-                return "Average";
-            else if(wtime < 80)
-                return "Slow";
-            else
-			    return "Very Slow";
-        }
-
-        private string ClothingPriorityToString(int priority)
-        {
-		    var byte1 = (priority >> 8 & 0xFF);
-		    string cover = "";
-            if ((byte1 & 0x40) != 0)
-			    cover += "Head, ";
-            if ((priority & 8) != 0 || (priority & 0x400) != 0)
-                cover += "Chest, ";
-            if ((priority & 0x10) != 0 || (byte1 & 8) != 0)
-                cover += "Abdomen, ";
-            if ((priority & 0x20) != 0 || (byte1 & 0x10) != 0)
-                cover += "Upper Arms, ";
-            if ((priority & 0x40) != 0 || (byte1 & 0x20) != 0)
-                cover += "Lower Arms, ";
-            if ((priority & 0x8000) != 0)
-                cover += "Hands, ";
-            if ((priority & 0x2) != 0 || (byte1 & 0x1) != 0)
-                cover += "Upper Legs, ";
-            if ((priority & 0x4) != 0 || (byte1 & 0x2) != 0)
-                cover += "Lower Legs, ";
-            if ((priority & 0x10000) != 0)
-                cover += "Feet, ";
-            cover = cover.TrimEnd(new Char[] { ',', ' ' }); // trims comma and space
-            if (cover != "")
-                return "Covers " + cover;
-            else
-                return "";
-        }
 
         private void AddItemInfo(string text, bool surpressDoubleSpacing = true)
         {
@@ -702,37 +596,140 @@ namespace WeenieViewer.Appraisal
                  * _sprintf(&ability_txt, "Bonus to Attack Skill: %s%d%%.", v21, (unsigned __int64)(v22 * 100.0 + 0.5));
                  */
             }
-            /*
-             * Note Quite Sure what this is? Adds "Covers: <area>" for weapons??
-            if (lm & 0x8007FFF && AppraisalSystem::ClothingPriorityToString(v3->cur_weenobj->pwd._priority, ps))
+
+            int priority = 0;
+            InqInt(PropertyInt.CLOTHING_PRIORITY_INT, ref priority);
+            if ((_valid_locations & 0x8007FFF) > 0 && priority > 0)
             {
-                v33 = ps[0].m_buffer->m_data;
-                ItemExamineUI::AddItemInfo(v3, v33, 0, 1);
+                string coverage = ClothingPriorityToString(priority);
+                AddItemInfo(coverage);
             }
-            */
 
         }
 
         void Appraisal_ShowDefenseModData()
         {
             float rDefenseModifier = 0;
-            if (InqFloat((PropertyFloat)0x1Du, ref rDefenseModifier) && rDefenseModifier != -1)
+            if (InqFloat((PropertyFloat)0x1Du, ref rDefenseModifier) && rDefenseModifier != 1)
             {
                 string v3 = SmallModifierToString(rDefenseModifier);
                 AddItemInfo($"Bonus to Melee Defense: {v3}.");
             }
 
-            if (InqFloat((PropertyFloat)0x95u, ref rDefenseModifier) && rDefenseModifier != -1)
+            if (InqFloat((PropertyFloat)0x95u, ref rDefenseModifier) && rDefenseModifier != 1)
             {
                 string v3 = SmallModifierToString(rDefenseModifier);
                 AddItemInfo($"Bonus to Missile Defense: {v3}.");
             }
 
-            if (InqFloat((PropertyFloat)0x96u, ref rDefenseModifier) && rDefenseModifier != -1)
+            if (InqFloat((PropertyFloat)0x96u, ref rDefenseModifier) && rDefenseModifier != 1)
             {
                 string v3 = SmallModifierToString(rDefenseModifier);
                 AddItemInfo($"Bonus to Magic Defense: {v3}.");
             }
+        }
+
+        void Appraisal_ShowArmorMods()
+        {
+            int ItemType = 0;
+            int ArmorLevel = 0;
+            if(InqInt(PropertyInt.ITEM_TYPE_INT, ref ItemType) && InqInt(PropertyInt.ARMOR_LEVEL_INT, ref ArmorLevel) && ArmorLevel > 0)
+            {
+                AddItemInfo($"\nArmor Level: {ArmorLevel}");
+
+                float mod_vs_slash = 0;
+                if (InqFloat(PropertyFloat.ARMOR_MOD_VS_SLASH_FLOAT, ref mod_vs_slash))
+                {
+                    string dmg_resist = DamageResistanceToString((int)DamageType.Slash, ArmorLevel, mod_vs_slash);
+                    if (dmg_resist != "") AddItemInfo(dmg_resist);
+                }
+
+                float mod_vs_pierce = 0;
+                if (InqFloat(PropertyFloat.ARMOR_MOD_VS_PIERCE_FLOAT, ref mod_vs_pierce))
+                {
+                    string dmg_resist = DamageResistanceToString((int)DamageType.Pierce, ArmorLevel, mod_vs_pierce);
+                    if (dmg_resist != "") AddItemInfo(dmg_resist);
+                }
+
+                float mod_vs_bludgeon = 0;
+                if (InqFloat(PropertyFloat.ARMOR_MOD_VS_BLUDGEON_FLOAT, ref mod_vs_bludgeon))
+                {
+                    string dmg_resist = DamageResistanceToString((int)DamageType.Bludgeon, ArmorLevel, mod_vs_bludgeon);
+                    if (dmg_resist != "") AddItemInfo(dmg_resist);
+                }
+
+                float mod_vs_fire = 0;
+                if (InqFloat(PropertyFloat.ARMOR_MOD_VS_FIRE_FLOAT, ref mod_vs_fire))
+                {
+                    string dmg_resist = DamageResistanceToString((int)DamageType.Fire, ArmorLevel, mod_vs_fire);
+                    if (dmg_resist != "") AddItemInfo(dmg_resist);
+                }
+
+                float mod_vs_cold = 0;
+                if (InqFloat(PropertyFloat.ARMOR_MOD_VS_COLD_FLOAT, ref mod_vs_cold))
+                {
+                    string dmg_resist = DamageResistanceToString((int)DamageType.Cold, ArmorLevel, mod_vs_cold);
+                    if (dmg_resist != "") AddItemInfo(dmg_resist);
+                }
+
+                float mod_vs_acid = 0;
+                if (InqFloat(PropertyFloat.ARMOR_MOD_VS_ACID_FLOAT, ref mod_vs_acid))
+                {
+                    string dmg_resist = DamageResistanceToString((int)DamageType.Acid, ArmorLevel, mod_vs_acid);
+                    if (dmg_resist != "") AddItemInfo(dmg_resist);
+                }
+
+                float mod_vs_electric = 0;
+                if (InqFloat(PropertyFloat.ARMOR_MOD_VS_ELECTRIC_FLOAT, ref mod_vs_electric))
+                {
+                    string dmg_resist = DamageResistanceToString((int)DamageType.Electric, ArmorLevel, mod_vs_electric);
+                    if (dmg_resist != "") AddItemInfo(dmg_resist);
+                }
+
+                // Always 1 unless otherwise set
+                float mod_vs_nether = 1;
+                InqFloat(PropertyFloat.ARMOR_MOD_VS_NETHER_FLOAT, ref mod_vs_nether);
+                string nether_resist = DamageResistanceToString((int)DamageType.Nether, ArmorLevel, mod_vs_nether);
+                if (nether_resist != "") AddItemInfo(nether_resist);
+                
+            }
+        }
+
+        /// <summary>
+        /// Adds any spells this item has on it
+        /// </summary>
+        void Appraisal_ShowShortMagicInfo()
+        {
+            int spellDID = 0;
+            if(InqDataID(PropertyDID.SPELL_DID, ref spellDID) || Weenie.SpellBook.Count > 0) {
+                string spellTxt = "Spells: ";
+                if(spellDID > 0)
+                    spellTxt += GetSpellName(spellDID) + ", ";
+
+                foreach(var spell in Weenie.SpellBook)
+                {
+                    spellTxt += GetSpellName(spell.Key) + ", ";
+                }
+
+                spellTxt = spellTxt.TrimEnd(new Char[] { ' ', ',' });
+
+                AddItemInfo($"Spells: {spellTxt}", false);
+            }
+
+        }
+
+        void Appraisal_ShowSpecialProperties()
+        {
+            int iUnique = 0;
+            if (InqInt((PropertyInt)0x117u, ref iUnique))
+                AddItemInfo($"You can only carry {iUnique} of these items.");
+
+            float iCooldown = 0;
+            if(InqFloat((PropertyFloat)0xA7u, ref iCooldown))
+            {
+                AddItemInfo("Cooldown When Used: " + DeltaTimeToString(iCooldown));
+            }
+
         }
     }
 }

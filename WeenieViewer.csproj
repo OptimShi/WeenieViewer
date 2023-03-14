@@ -81,6 +81,8 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Appraisal\ItemExamine.cs" />
+    <Compile Include="Appraisal\ItemExamine_Spells.cs" />
+    <Compile Include="Appraisal\ItemExamine_Utils.cs" />
     <Compile Include="Controls\TabWeenie.xaml.cs">
       <DependentUpon>TabWeenie.xaml</DependentUpon>
     </Compile>
