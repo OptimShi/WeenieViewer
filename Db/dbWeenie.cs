@@ -19,7 +19,7 @@ namespace WeenieViewer.Db
         public Dictionary<PropertyInt, int> Ints;
         public Dictionary<PropertyInt64, long> Int64s;
         public Dictionary<PropertyString, string> Strings;
-        public Dictionary<int, float> SpellBook; // SpellID, Probability
+        public List<SpellBook> SpellBook; // SpellID, Probability
 
         public int BookMaxPages;
         public int BookMaxCharsPerPage;

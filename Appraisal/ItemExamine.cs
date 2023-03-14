@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Media;
 using System.Xml.Linq;
 using WeenieViewer.Db;
 using WeenieViewer.Enums;
@@ -108,7 +109,7 @@ namespace WeenieViewer.Appraisal
         private bool SkillToString(Skill skill, ref string value)
         {
             value = SkillExtensions.ToSentence(skill);
-            if(value != "")
+            if (value != "")
                 return true;
 
             return false;
@@ -118,7 +119,7 @@ namespace WeenieViewer.Appraisal
         {
             int val = 0;
 
-            if(InqInt((PropertyInt)0x13u, ref val))
+            if (InqInt((PropertyInt)0x13u, ref val))
                 AddItemInfo("Value: " + val.ToString("N0"));
             else
                 AddItemInfo("Value: ???");
@@ -127,7 +128,7 @@ namespace WeenieViewer.Appraisal
         private void Appraisal_ShowBurdenInfo()
         {
             int val = 0;
-            if(InqInt((PropertyInt)5u, ref val))
+            if (InqInt((PropertyInt)5u, ref val))
                 AddItemInfo("Burder: " + val.ToString("N0"));
             else
                 AddItemInfo("Burden: Unknown");
@@ -141,7 +142,7 @@ namespace WeenieViewer.Appraisal
             if (InqInt((PropertyInt)0xABu, ref cTinkers))
             {
                 string plural = "";
-                if(cTinkers > 1)
+                if (cTinkers > 1)
                     plural = "s"; // if it has multiple tinks
                 AddItemInfo($"This item has been tinkered {cTinkers} time{plural}.");
             }
@@ -196,9 +197,9 @@ namespace WeenieViewer.Appraisal
             }
         }
             */
-    }
+        }
 
-    private bool Appraisal_ShowSet()
+        private bool Appraisal_ShowSet()
         {
             int setBonus = 0;
             if (InqInt((PropertyInt)0x109u, ref setBonus))
@@ -390,13 +391,13 @@ namespace WeenieViewer.Appraisal
             if (life_resist_rating > 0)
                 output += $"Life Resist {life_resist_rating}, ";
 
-            if(output != "")
+            if (output != "")
             {
                 output = "Ratings: " + output.TrimEnd(new Char[] { ' ', ',' }) + "."; // remove the last ", " and add a perdiod
                 AddItemInfo(output);
             }
 
-            if(gear_max_health > 0)
+            if (gear_max_health > 0)
                 AddItemInfo($"This item adds {gear_max_health} Vitality.");
 
             if (output != "" || gear_max_health > 0)
@@ -509,56 +510,72 @@ namespace WeenieViewer.Appraisal
                             AddItemInfo(ability_txt);
                         }
                     }
-             
-                int retval = 0;
-                InqInt((PropertyInt)0xCCu, ref retval); // ELEMENTAL_DAMAGE_BONUS_INT
-                if (retval > 0)
-                {
-                    string damageType = DamageTypeExtensions.GetDamageTypes((DamageType)_damageType);
-                    string rhs = $"Elemental Damage Bonus: {retval}, {damageType}.";
-                    AddItemInfo(rhs);
-                }
 
-                if (IsMissile)
-                {
-                    float damageMod = 0;
-                    if (InqFloat(PropertyFloat.DAMAGE_MOD_FLOAT, ref damageMod)) {
-                        string modifier_txt = ModifierToString(damageMod);
-                        AddItemInfo($"Damage Modifier: {modifier_txt}.");
+                    int retval = 0;
+                    InqInt((PropertyInt)0xCCu, ref retval); // ELEMENTAL_DAMAGE_BONUS_INT
+                    if (retval > 0)
+                    {
+                        string damageType = DamageTypeExtensions.GetDamageTypes((DamageType)_damageType);
+                        string rhs = $"Elemental Damage Bonus: {retval}, {damageType}.";
+                        AddItemInfo(rhs);
                     }
-                }
 
-                if((_valid_locations & 0x2500000) > 0) // Melee, Missile, Two-Handed
-                {
-                    int wap_weapon_time = 0;
-                    InqInt(PropertyInt.WEAPON_TIME_INT, ref wap_weapon_time);
-                    if(wap_weapon_time <= 0)
+                    if (IsMissile)
                     {
-                        AddItemInfo("Speed:  Unknown");
-                        if (IsMissile)
-                            AddItemInfo("Range:  Unknown");
-                    }
-                    else
-                    {
-                        string ps = "Speed: " + WeaponTimeToString(wap_weapon_time) + " (" + wap_weapon_time + ")";
-                        AddItemInfo(ps);
-                        if (IsMissile)
+                        float damageMod = 0;
+                        if (InqFloat(PropertyFloat.DAMAGE_MOD_FLOAT, ref damageMod))
                         {
-                            float wap_max_velocity = 0;
-                            InqFloat(PropertyFloat.MAXIMUM_VELOCITY_FLOAT, ref wap_max_velocity);
-                            double fRange = Math.Pow(wap_max_velocity, 2.0) * 0.1020408163265306 * 1.094;
-                            if (fRange > 85) fRange = 85; // Max Range
-
-                            double range;
-                            if (fRange >= 10)
-                                range = fRange - (int)fRange % 5;
-                            else
-                                range = fRange;
-
-                            AddItemInfo($"Range: {Math.Floor(range):N0} yds.");
+                            string modifier_txt = ModifierToString(damageMod);
+                            AddItemInfo($"Damage Modifier: {modifier_txt}.");
                         }
                     }
+
+                    if ((_valid_locations & 0x2500000) > 0) // Melee, Missile, Two-Handed
+                    {
+                        int wap_weapon_time = 0;
+                        InqInt(PropertyInt.WEAPON_TIME_INT, ref wap_weapon_time);
+                        if (wap_weapon_time <= 0)
+                        {
+                            AddItemInfo("Speed:  Unknown");
+                            if (IsMissile)
+                                AddItemInfo("Range:  Unknown");
+                        }
+                        else
+                        {
+                            string ps = "Speed: " + WeaponTimeToString(wap_weapon_time) + " (" + wap_weapon_time + ")";
+                            AddItemInfo(ps);
+                            if (IsMissile)
+                            {
+                                float wap_max_velocity = 0;
+                                InqFloat(PropertyFloat.MAXIMUM_VELOCITY_FLOAT, ref wap_max_velocity);
+                                double fRange = Math.Pow(wap_max_velocity, 2.0) * 0.1020408163265306 * 1.094;
+                                if (fRange > 85) fRange = 85; // Max Range
+
+                                double range;
+                                if (fRange >= 10)
+                                    range = fRange - (int)fRange % 5;
+                                else
+                                    range = fRange;
+
+                                AddItemInfo($"Range: {Math.Floor(range):N0} yds.");
+                            }
+                        }
                     }
+                }
+
+                float wap_weapon_offense = 0;
+                InqFloat(PropertyFloat.WEAPON_OFFENSE_FLOAT, ref wap_weapon_offense);
+                if (wap_weapon_offense != 1)
+                {
+                    double bonus = wap_weapon_offense - 1;
+                    string mod_sign;
+                    if (bonus < 0)
+                        mod_sign = "-";
+                    else
+                        mod_sign = "+";
+
+                    bonus = bonus * 100 + 0.5;
+                    AddItemInfo($"Bonus to Attack Skill: {mod_sign}{bonus:F0}%.");
                 }
 
                 if ((_valid_locations & 0x400000) > 0)
@@ -591,6 +608,8 @@ namespace WeenieViewer.Appraisal
                             break;
                     }
                 }
+
+                
 
                 /*
                  * _sprintf(&ability_txt, "Bonus to Attack Skill: %s%d%%.", v21, (unsigned __int64)(v22 * 100.0 + 0.5));
@@ -633,7 +652,7 @@ namespace WeenieViewer.Appraisal
         {
             int ItemType = 0;
             int ArmorLevel = 0;
-            if(InqInt(PropertyInt.ITEM_TYPE_INT, ref ItemType) && InqInt(PropertyInt.ARMOR_LEVEL_INT, ref ArmorLevel) && ArmorLevel > 0)
+            if (InqInt(PropertyInt.ITEM_TYPE_INT, ref ItemType) && InqInt(PropertyInt.ARMOR_LEVEL_INT, ref ArmorLevel) && ArmorLevel > 0)
             {
                 AddItemInfo($"\nArmor Level: {ArmorLevel}");
 
@@ -691,7 +710,7 @@ namespace WeenieViewer.Appraisal
                 InqFloat(PropertyFloat.ARMOR_MOD_VS_NETHER_FLOAT, ref mod_vs_nether);
                 string nether_resist = DamageResistanceToString((int)DamageType.Nether, ArmorLevel, mod_vs_nether);
                 if (nether_resist != "") AddItemInfo(nether_resist);
-                
+
             }
         }
 
@@ -701,14 +720,15 @@ namespace WeenieViewer.Appraisal
         void Appraisal_ShowShortMagicInfo()
         {
             int spellDID = 0;
-            if(InqDataID(PropertyDID.SPELL_DID, ref spellDID) || Weenie.SpellBook.Count > 0) {
+            if (InqDataID(PropertyDID.SPELL_DID, ref spellDID) || Weenie.SpellBook.Count > 0)
+            {
                 string spellTxt = "Spells: ";
-                if(spellDID > 0)
+                if (spellDID > 0)
                     spellTxt += GetSpellName(spellDID) + ", ";
 
-                foreach(var spell in Weenie.SpellBook)
+                foreach (var spell in Weenie.SpellBook)
                 {
-                    spellTxt += GetSpellName(spell.Key) + ", ";
+                    spellTxt += spell.Name + ", ";
                 }
 
                 spellTxt = spellTxt.TrimEnd(new Char[] { ' ', ',' });
@@ -725,10 +745,145 @@ namespace WeenieViewer.Appraisal
                 AddItemInfo($"You can only carry {iUnique} of these items.");
 
             float iCooldown = 0;
-            if(InqFloat((PropertyFloat)0xA7u, ref iCooldown))
+            if (InqFloat((PropertyFloat)0xA7u, ref iCooldown))
             {
                 AddItemInfo("Cooldown When Used: " + DeltaTimeToString(iCooldown));
             }
+
+            int cleaving = 0;
+            if (InqInt((PropertyInt)0x124u, ref cleaving))
+            {
+                AddItemInfo($"Cleave: {cleaving} enemies in front arc.");
+            }
+
+            int creatureType = 0;
+            if (InqInt((PropertyInt)0xA6u, ref creatureType))
+            {
+                if (creatureType == 31)
+                    AddItemInfo("Bael'Zharon's Hate");
+                else
+                {
+                    string slayer = CreatureExtensions.ToSentence((CreatureType)creatureType);
+                    AddItemInfo($"{slayer} slayer");
+                }
+            }
+
+            string properties = "";
+            int attacktype = 0;
+            if (InqInt((PropertyInt)0x2Fu, ref attacktype) && (attacktype & 0x79E0) < 0)
+                properties += "Multi-Strike, ";
+
+            int imbuedCheck = 0;
+            int iTmp = 0;
+            if (InqInt((PropertyInt)0xB3u, ref iTmp))
+                imbuedCheck = iTmp;
+            if (InqInt((PropertyInt)0x12Fu, ref iTmp))
+                imbuedCheck |= iTmp;
+            if (InqInt((PropertyInt)0x130u, ref iTmp))
+                imbuedCheck |= iTmp;
+            if (InqInt((PropertyInt)0x131u, ref iTmp))
+                imbuedCheck |= iTmp;
+            if (InqInt((PropertyInt)0x132u, ref iTmp))
+                imbuedCheck |= iTmp;
+
+            if (imbuedCheck > 0)
+            {
+                if ((imbuedCheck & 1) > 0)
+                    properties += "Critical Strike, ";
+                if ((imbuedCheck & 2) > 0)
+                    properties += "Crippling Blow, ";
+                if ((imbuedCheck & 4) > 0)
+                    properties += "Armor Rending, ";
+                if ((imbuedCheck & 8) > 0)
+                    properties += "Slash Rending, ";
+                if ((imbuedCheck & 0x10) > 0)
+                    properties += "Pierce Rending, ";
+                if ((imbuedCheck & 0x20) > 0)
+                    properties += "Bludgeon Rending, ";
+                if ((imbuedCheck & 0x40) > 0)
+                    properties += "Acid Rending, ";
+                if ((imbuedCheck & 0x4000) > 0)
+                    properties += "Nether Rending, ";
+                if ((imbuedCheck & 0x80) > 0)
+                    properties += "Cold Rending, ";
+                if ((imbuedCheck & 0x100) > 0)
+                    properties += "Lightning Rending, ";
+                if ((imbuedCheck & 0x200) > 0)
+                    properties += "Fire Rending, ";
+                if ((imbuedCheck & 0x400) > 0)
+                    properties += "+1 Melee Defense, ";
+                if ((imbuedCheck & 0x800) > 0)
+                    properties += "+1 Missile Defense, ";
+                if ((imbuedCheck & 0x1000) > 0)
+                    properties += "+1 Magic Defense, ";
+                if (imbuedCheck < 0)
+                    properties += "Phantasmal, ";
+            }
+
+            float absorb_magic = 0;
+            if (InqFloat((PropertyFloat)0x9Fu, ref absorb_magic))
+                properties += "Magic Absorbing, ";
+            int magic_resist = 0;
+            if (InqInt((PropertyInt)0x24u, ref magic_resist) && magic_resist >= 9999)
+                properties += "Unenchantable, ";
+            int attuned = 0;
+            if (InqInt((PropertyInt)0x72u, ref attuned) && attuned > 0 && attuned < 2)
+                properties += "Attuned, ";
+            int bonded = 0;
+            if (InqInt((PropertyInt)0x21u, ref bonded))
+            {
+                switch (bonded)
+                {
+                    case -2: properties += "Destroyed on Death, "; break;
+                    case -1: properties += "Dropped on Death, "; break;
+                    case 1: properties += "Bonded, "; break;
+                }
+            }
+
+            bool retained = false;
+            if (InqBool((PropertyBool)0x5Bu, ref retained) && retained == true)
+                properties += "Retained, ";
+            float fCrit = 0;
+            if (InqFloat((PropertyFloat)0x88u, ref fCrit))
+                properties += "Crushing Blow, ";
+            if (InqFloat((PropertyFloat)0x93u, ref fCrit))
+                properties += "Biting Strike, ";
+            if (InqFloat((PropertyFloat)0x9Bu, ref fCrit))
+                properties += "Armor Cleaving, ";
+
+            float fResMod = 1;
+            int damageType = 0;
+            if (InqFloat((PropertyFloat)0x9Du, ref fResMod) && InqInt((PropertyInt)0x107u, ref damageType))
+            {
+                string txt_tmp = DamageTypeExtensions.GetDamageTypes((DamageType)damageType);
+                properties += $"Resistance Cleaving: {txt_tmp}, ";
+            }
+
+            int spellDID = 0;
+            if (InqDataID((PropertyDID)0x37u, ref spellDID))
+                properties += "Cast on Strike, ";
+            bool bIvoryable = false;
+            if (InqBool((PropertyBool)0x63u, ref bIvoryable) && bIvoryable == true)
+                properties += "Ivoryable, ";
+            bool bDyable = false;
+            if (InqBool((PropertyBool)0x64u, ref bDyable) && bDyable == true)
+                properties += "Dyeable, ";
+
+            if (properties.Length > 0)
+            {
+                properties = properties.TrimEnd(new Char[] { ' ', ',' });
+                AddItemInfo($"Properties: {properties}");
+            }
+            if (imbuedCheck != 0)
+                AddItemInfo("This item cannot be further imbued.");
+            bool bAutowieldLeft = false;
+            if (InqBool((PropertyBool)0x82u, ref bAutowieldLeft) && bAutowieldLeft == true)
+            {
+                AddItemInfo("This item is tethered to the left side.");
+                AddItemInfo("");
+            }
+            if (imbuedCheck != 0 && bAutowieldLeft == false)
+                AddItemInfo("");
 
         }
     }

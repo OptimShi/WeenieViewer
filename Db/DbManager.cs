@@ -19,6 +19,7 @@ namespace WeenieViewer.Db
     {
         SQLiteConnection sqlite;
         public string Version = "";
+        public Dictionary<int, string> SpellNames;
 
         public void Connect()
         {
@@ -108,9 +109,28 @@ namespace WeenieViewer.Db
             return results;
         }
 
+        public void LoadSpells()
+        {
+            if (SpellNames == null)
+            {
+                SpellNames = new Dictionary<int, string>();
+
+                var command = sqlite.CreateCommand();
+                command.CommandText = $"SELECT id, name FROM `spell`;";
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        int id = reader.GetInt32(reader.GetOrdinal("id"));
+                        string name = reader.GetString(reader.GetOrdinal("name"));
+                        SpellNames.Add(id, name);
+                    }
+                }
+            }
+        }
+
         public dbWeenie GetWeenie(int wcid)
         {
-
             var command = sqlite.CreateCommand();
             command.CommandText = $"SELECT * FROM sqlite_master where type='table';";
             using (var reader = command.ExecuteReader())
@@ -305,9 +325,11 @@ namespace WeenieViewer.Db
             return results;
         }
 
-        private Dictionary<int, float> _GetSpellBook(int wcid)
+        private List<SpellBook> _GetSpellBook(int wcid)
         {
-            Dictionary<int, float> results = new Dictionary<int, float>();
+            LoadSpells();
+
+            List<SpellBook> results = new List<SpellBook>();
             var command = sqlite.CreateCommand();
             command.CommandText = $"SELECT `spell`, `probability` FROM `weenie_properties_spell_book` WHERE `object_Id` = @wcid order by `id`";
             command.Parameters.Add(new SQLiteParameter("@wcid", wcid));
@@ -316,9 +338,11 @@ namespace WeenieViewer.Db
             {
                 while (reader.Read())
                 {
-                    int spell = reader.GetInt32(reader.GetOrdinal("spell"));
-                    float probability = reader.GetFloat(reader.GetOrdinal("spell"));
-                    results.Add(spell, probability);
+                    SpellBook spellBook = new SpellBook();
+                    spellBook.SpellId = reader.GetInt32(reader.GetOrdinal("spell"));
+                    spellBook.Probability = reader.GetFloat(reader.GetOrdinal("spell"));
+                    spellBook.Name = GetSpellName(spellBook.SpellId);
+                    results.Add(spellBook);
                 }
             }
 
@@ -352,6 +376,14 @@ namespace WeenieViewer.Db
             }
 
             return results;
+        }
+
+        public string GetSpellName(int spell_id)
+        {
+            if (SpellNames.ContainsKey(spell_id))
+                return SpellNames[spell_id];
+
+            return null;
         }
     }
 }
