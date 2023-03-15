@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls.Primitives;
 using System.Windows.Media;
 using System.Xml.Linq;
 using WeenieViewer.Db;
@@ -71,7 +72,7 @@ namespace WeenieViewer.Appraisal
             Appraisal_ShowWieldRequirements();
             Appraisal_ShowUsageLimitInfo();
             Appraisal_ShowItemLevelInfo();
-            // Appraisal_ShowActivationRequirements();
+            Appraisal_ShowActivationRequirements();
             // Appraisal_ShowCasterData();
             // Appraisal_ShowBoostValue();
             // Appraisal_ShowHealKitValues();
@@ -1065,6 +1066,67 @@ namespace WeenieViewer.Appraisal
             int cloak_proc = 0;
             if(InqInt((PropertyInt)0x160u, ref cloak_proc) && cloak_proc == 2)
                 AddItemInfo("This cloak has a chance to reduce an incoming attack by 200 damage.", true);
+        }
+
+        void Appraisal_ShowActivationRequirements()
+        {
+            string activationReqsString = "";
+
+            int iDifficulty = 0;
+            if (InqInt((PropertyInt)0x6D, ref iDifficulty) && iDifficulty > 0)
+                activationReqsString += $"Arcane Lore: {iDifficulty}, ";
+
+            int iRank = 0;
+            if (InqInt((PropertyInt)0x6E, ref iRank) && iRank >= 1)
+                activationReqsString += $"Allegiance Rank: {iRank}, ";
+
+            int heritage_req = 0;
+            if(InqInt((PropertyInt)0xBC, ref heritage_req))
+            {
+                string activator_name = "";
+                if (InqHeritageGroupDisplayName(heritage_req, ref activator_name))
+                    activationReqsString += activator_name + ", ";
+            }
+
+            int iSkillLimit = 0;
+            int attribute2nd = 0;
+            if (InqInt((PropertyInt)0x73u, ref iSkillLimit) && iSkillLimit > 0 && InqInt((PropertyInt)0xB0u, ref attribute2nd))
+            {
+                string activator_name = InqSkillName(attribute2nd);
+                if (activator_name.Length > 0)
+                    activationReqsString += $"{activator_name}: {iSkillLimit}, ";
+            }
+
+            int iAttributeLimit = 0;
+            attribute2nd = 0;
+            if (InqInt((PropertyInt)0x102u, ref iAttributeLimit) && iAttributeLimit > 0 && InqInt((PropertyInt)0x101u, ref attribute2nd))
+            {
+                string activator_name = InqAttributeName(attribute2nd);
+                if (activator_name.Length > 0)
+                    activationReqsString += $"{activator_name}: {iAttributeLimit}, ";
+            }
+
+            int iAttribute2ndLimit = 0;
+            attribute2nd = 0;
+            if (InqInt((PropertyInt)0x104u, ref iAttribute2ndLimit) && iAttributeLimit > 0 && InqInt((PropertyInt)0x103u, ref attribute2nd))
+            {
+                string activator_name = InqAttribute2ndName(attribute2nd);
+                if (activator_name.Length > 0)
+                    activationReqsString += $"{activator_name}: {iAttributeLimit}, ";
+            }
+
+            if (activationReqsString.Length > 0)
+                AddItemInfo("Activation requires " + activationReqsString.TrimEnd(new Char[] { ' ', ',' }));
+
+            bool has_allowed_activator = false;
+            if (InqBool((PropertyBool)0x5Eu, ref has_allowed_activator) && has_allowed_activator == true)
+            {
+                string activator_name = "the original owner";
+                InqString(PropertyString.CRAFTSMAN_NAME_STRING, ref activator_name);
+                AddItemInfo("This item can only be activated by " + activator_name);
+            }
+
+
         }
     }
 }
