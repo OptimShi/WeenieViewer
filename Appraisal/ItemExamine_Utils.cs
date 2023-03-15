@@ -431,9 +431,80 @@ namespace WeenieViewer.Appraisal
             return "";
         }
 
-        private int ItemTotalXPToLevel(long item_xp, long item_base_xp, int item_max_level, int item_xp_style)
+        // Thanks to ACE for these two functions! 
+        private int ItemTotalXPToLevel(long _gained_xp, long _base_xp, int _max_level, int _xp_scheme)
         {
-            return 9999;
+            var level = 0;
+
+            switch (_xp_scheme)
+            {
+                case 1:
+                    level = (int)Math.Floor((double)_gained_xp / _base_xp);
+                    break;
+
+                case 2:
+
+                    var levelXP = _base_xp;
+                    var remainXP = _gained_xp;
+
+                    while (remainXP >= levelXP)
+                    {
+                        level++;
+
+                        remainXP -= levelXP;
+                        levelXP *= 2;
+                    }
+                    break;
+
+                case 3:
+
+                    if (_gained_xp >= _base_xp && _gained_xp < _base_xp * 3)
+                        level = 1;
+                    else
+                        level = (int)Math.Floor((double)(_gained_xp - _base_xp) / _base_xp);
+
+                    break;
+            }
+
+            if (level > _max_level)
+                level = _max_level;
+
+            return level;
+        }
+
+        public static long ItemLevelToTotalXP(int itemLevel, long baseXP, int maxLevel, int xpScheme)
+        {
+            if (itemLevel < 1)
+                return 0;
+
+            if (itemLevel > maxLevel)
+                itemLevel = maxLevel;
+
+            if (itemLevel == 1)
+                return baseXP;
+
+            switch (xpScheme)
+            {
+                case 1:
+                    return (long)itemLevel * baseXP;
+
+                case 2:
+                default:
+                    var levelXP = baseXP;
+                    var totalXP = baseXP;
+
+                    for (var i = itemLevel - 1; i > 0; i--)
+                    {
+                        levelXP *= 2;
+                        totalXP += levelXP;
+                    }
+
+                    return totalXP;
+
+                case 3:
+
+                    return (long)itemLevel * baseXP + baseXP;
+            }
         }
     }
 }

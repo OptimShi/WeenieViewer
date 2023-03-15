@@ -74,8 +74,8 @@ namespace WeenieViewer.Db
             Dictionary<int, string> results = new Dictionary<int, string>();
             var command = sqlite.CreateCommand();
             command.CommandText =
-                $"SELECT `object_Id`, `value` FROM `weenie_properties_string` WHERE `type` = 1 and `value` like '%{name}%' order by `object_Id` asc";
-            //command.Parameters.AddWithValue("$name", name);
+                $"SELECT `object_Id`, `value` FROM `weenie_properties_string` WHERE `type` = 1 and `value` like @name order by `object_Id` asc";
+            command.Parameters.AddWithValue("@name", "%" + name + "%");
 
             using (var reader = command.ExecuteReader())
             {

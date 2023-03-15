@@ -10,6 +10,7 @@ using System.Windows.Media;
 using System.Xml.Linq;
 using WeenieViewer.Db;
 using WeenieViewer.Enums;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace WeenieViewer.Appraisal
 {
@@ -740,6 +741,8 @@ namespace WeenieViewer.Appraisal
 
         void Appraisal_ShowSpecialProperties()
         {
+            AddItemInfo("");
+
             int iUnique = 0;
             if (InqInt((PropertyInt)0x117u, ref iUnique))
                 AddItemInfo($"You can only carry {iUnique} of these items.");
@@ -757,10 +760,12 @@ namespace WeenieViewer.Appraisal
             }
 
             int creatureType = 0;
+            string properties = "";
+
             if (InqInt((PropertyInt)0xA6u, ref creatureType))
             {
                 if (creatureType == 31)
-                    AddItemInfo("Bael'Zharon's Hate");
+                    properties += "Bael'Zharon's Hate, ";
                 else
                 {
                     string slayer = CreatureExtensions.ToSentence((CreatureType)creatureType);
@@ -768,9 +773,8 @@ namespace WeenieViewer.Appraisal
                 }
             }
 
-            string properties = "";
             int attacktype = 0;
-            if (InqInt((PropertyInt)0x2Fu, ref attacktype) && (attacktype & 0x79E0) < 0)
+            if (InqInt((PropertyInt)0x2Fu, ref attacktype) && (attacktype & 0x79E0) > 0)
                 properties += "Multi-Strike, ";
 
             int imbuedCheck = 0;
@@ -1044,10 +1048,18 @@ namespace WeenieViewer.Appraisal
             {
                 InqInt64((PropertyInt64)4u, ref item_xp);
 
-                long level = ItemTotalXPToLevel(item_xp, item_base_xp, item_max_level, item_xp_style);
-                if (level > item_max_level) level = item_max_level;
+                int level = ItemTotalXPToLevel(item_xp, item_base_xp, item_max_level, item_xp_style);
 
-                // MORE TODO HERE!!
+                int next_level = level + 1;
+                if (next_level > item_max_level) next_level = item_max_level;
+                long next_level_xp = ItemLevelToTotalXP(next_level, item_base_xp, item_max_level, item_xp_style);
+
+                string formatted_item_xp = item_xp.ToString("N0");
+                string formatted_next_xp = next_level_xp.ToString("N0");
+                AddItemInfo($"Item Level: {level} / {item_max_level}");
+                AddItemInfo($"Item XP: {formatted_item_xp} / {formatted_next_xp}");
+                AddItemInfo("");
+
             }
 
             int cloak_proc = 0;
