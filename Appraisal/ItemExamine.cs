@@ -65,11 +65,11 @@ namespace WeenieViewer.Appraisal
             Appraisal_ShowArmorMods();
             Appraisal_ShowShortMagicInfo();
             Appraisal_ShowSpecialProperties();
-            // Appraisal_ShowUsage();
-            // Appraisal_ShowLevelLimitInfo();
-            // Appraisal_ShowWieldRequirements();
-            // Appraisal_ShowUsageLimitInfo();
-            // Appraisal_ShowItemLevelInfo();
+            Appraisal_ShowUsage();
+            Appraisal_ShowLevelLimitInfo();
+            Appraisal_ShowWieldRequirements();
+            Appraisal_ShowUsageLimitInfo();
+            Appraisal_ShowItemLevelInfo();
             // Appraisal_ShowActivationRequirements();
             // Appraisal_ShowCasterData();
             // Appraisal_ShowBoostValue();
@@ -609,7 +609,7 @@ namespace WeenieViewer.Appraisal
                     }
                 }
 
-                
+
 
                 /*
                  * _sprintf(&ability_txt, "Bonus to Attack Skill: %s%d%%.", v21, (unsigned __int64)(v22 * 100.0 + 0.5));
@@ -885,6 +885,174 @@ namespace WeenieViewer.Appraisal
             if (imbuedCheck != 0 && bAutowieldLeft == false)
                 AddItemInfo("");
 
+        }
+
+        void Appraisal_ShowUsage()
+        {
+            string strUsage = "";
+            if (InqString((PropertyString)0xEu, ref strUsage))
+                AddItemInfo(strUsage, false);
+
+        }
+
+        void Appraisal_ShowLevelLimitInfo()
+        {
+            int min = 0, max = 0;
+            InqInt((PropertyInt)0x56u, ref min);
+            InqInt((PropertyInt)0x57u, ref max);
+            if (min > 0 || max > 0)
+            {
+                string numtxt;
+                if (max <= 0)
+                    numtxt = $"Restricted to characters of Level {min} or greater.";
+                else if (min <= 0)
+                    numtxt = $"Restricted to characters of Level {max} or below.";
+                else if (max == min)
+                    numtxt = $"Restricted to characters of Level {min}.";
+                else
+                    numtxt = $"Restricted to characters of Levels {min} to {max}.";
+
+                AddItemInfo(numtxt, false);
+            }
+
+            string portal_dest = "";
+            if (InqString((PropertyString)0x26u, ref portal_dest))
+                AddItemInfo("Destination: " + portal_dest, false);
+        }
+
+        void Appraisal_ShowWieldRequirements()
+        {
+            bool has_allowed_wielder = false;
+            if (InqBool((PropertyBool)0x55u, ref has_allowed_wielder) && has_allowed_wielder == true)
+            {
+                string strSkill = "the original owner";
+                InqString((PropertyString)0x19u, ref strSkill);
+                AddItemInfo("Wield requires " + strSkill);
+            }
+
+            int iAcctReqs = 0;
+            if (InqInt((PropertyInt)0x1Au, ref iAcctReqs) && iAcctReqs > 0)
+                AddItemInfo("Use requires Throne of Destiny.");
+
+            int heritage_specific = 0;
+            if (InqInt((PropertyInt)0x144u, ref heritage_specific))
+            {
+                string strSkill = "";
+                if (InqHeritageGroupDisplayName(heritage_specific, ref strSkill) && strSkill != "")
+                    AddItemInfo("Wield requires " + strSkill);
+            }
+
+            int iReq = 0;
+            int iSkill = 0;
+            int iDiff = 0;
+            if (InqInt((PropertyInt)0x9Eu, ref iReq) && InqInt((PropertyInt)0x9Fu, ref iSkill) && InqInt((PropertyInt)0xA0u, ref iDiff))
+                Appraisal_ShowWieldRequirements_Helper(iReq, iSkill, iDiff);
+            else
+            {
+                if (InqInt((PropertyInt)0x10Eu, ref iReq) && InqInt((PropertyInt)0x10Fu, ref iSkill) && InqInt((PropertyInt)0x110u, ref iDiff))
+                    Appraisal_ShowWieldRequirements_Helper(iReq, iSkill, iDiff);
+
+                if (InqInt((PropertyInt)0x111u, ref iReq) && InqInt((PropertyInt)0x112u, ref iSkill) && InqInt((PropertyInt)0x113u, ref iDiff))
+                    Appraisal_ShowWieldRequirements_Helper(iReq, iSkill, iDiff);
+
+                if (InqInt((PropertyInt)0x114u, ref iReq) && InqInt((PropertyInt)0x115u, ref iSkill) && InqInt((PropertyInt)0x116u, ref iDiff))
+                    Appraisal_ShowWieldRequirements_Helper(iReq, iSkill, iDiff);
+            }
+        }
+
+        /// <summary>
+        /// Not directly in the source, but makes the above much cleaner!
+        /// </summary>
+        /// <param name="iReq"></param>
+        /// <param name="iSkill"></param>
+        /// <param name="iDiff"></param>
+        void Appraisal_ShowWieldRequirements_Helper(int iReq, int iSkill, int iDiff)
+        {
+            string strSkill = GetAppraisalStringFromRequirements(iReq, iSkill, iDiff);
+            string numtxt = "";
+            switch (iReq)
+            {
+                case 1:
+                case 2:
+                case 3:
+                case 4:
+                case 5:
+                case 6:
+                case 7:
+                case 9:
+                case 0xA:
+                    numtxt = $"Wield requires {strSkill} {iDiff}";
+                    break;
+                case 8:
+                    if (iDiff != 3)
+                        numtxt = $"Wield requires trained {strSkill}";
+                    else
+                        numtxt = $"Wield requires specialized {strSkill}";
+                    break;
+                case 0xB:
+                    numtxt = $"Wield requires {strSkill} type";
+                    break;
+                case 0xC:
+                    numtxt = $"Wield requires {strSkill} race";
+                    break;
+            }
+            if (numtxt != "")
+                AddItemInfo(numtxt);
+        }
+
+        private void Appraisal_ShowUsageLimitInfo()
+        {
+            int level_requirement = 0;
+            if (InqInt((PropertyInt)0x171u, ref level_requirement) && level_requirement > 0)
+            {
+                AddItemInfo("");
+                AddItemInfo($"Use requires level {level_requirement}.");
+            }
+
+            int skill = 0;
+            int iskill_level = 0;
+            bool skill_str_added = false;
+            if (InqInt((PropertyInt)0x16Eu, ref skill) && skill > 0 && InqInt((PropertyInt)0x16Fu, ref iskill_level) && iskill_level > 0)
+            {
+                string skill_str = InqSkillName(skill);
+                if (skill_str == "") skill_str = "Unknown Skill";
+                AddItemInfo("");
+                AddItemInfo($"Use requires {skill_str} of at least {iskill_level}.");
+                skill_str_added = true;
+            }
+
+            skill = 0;
+            if (InqInt((PropertyInt)0x170u, ref skill) && skill > 0)
+            {
+                string skill_str = InqSkillName(skill);
+                if (skill_str == "") skill_str = "Unknown Skill";
+                if(!skill_str_added) AddItemInfo("");
+                AddItemInfo($"Use requires specialized {skill_str}.");
+            }
+        }
+
+        private void Appraisal_ShowItemLevelInfo()
+        {
+            long item_base_xp = 0;
+            long item_xp = 0;
+            int item_max_level = 0;
+            int item_xp_style = 0;
+
+            if (InqInt64((PropertyInt64)5u, ref item_base_xp) && item_base_xp > 0
+                && InqInt((PropertyInt)0x13Fu, ref item_max_level) && item_max_level > 0
+                && InqInt((PropertyInt)0x140u, ref item_xp_style) && item_xp_style > 0)
+            {
+                InqInt64((PropertyInt64)4u, ref item_xp);
+
+                long level = ItemTotalXPToLevel(item_xp, item_base_xp, item_max_level, item_xp_style);
+                if (level > item_max_level) level = item_max_level;
+
+                // MORE TODO HERE!!
+            }
+
+            int cloak_proc = 0;
+            if(InqInt((PropertyInt)0x160u, ref cloak_proc) && cloak_proc == 2)
+                AddItemInfo("This cloak has a chance to reduce an incoming attack by 200 damage.", true);
         }
     }
 }
