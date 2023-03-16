@@ -2,14 +2,17 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection.Emit;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls.Primitives;
 using System.Windows.Media;
 using System.Xml.Linq;
 using WeenieViewer.Db;
+using WeenieViewer.Db.weenie;
 using WeenieViewer.Enums;
 using static System.Net.Mime.MediaTypeNames;
 
@@ -23,37 +26,6 @@ namespace WeenieViewer.Appraisal
         public ItemExamine(dbWeenie weenie)
         {
             Weenie = weenie;
-            /*
-             * ItemExamineUI::Appraisal_ShowValueInfo
-             * ItemExamineUI::Appraisal_ShowBurdenInfo
-             * ItemExamineUI::Appraisal_ShowTinkeringInfo
-             * ItemExamineUI::Appraisal_ShowSet
-             * ItemExamineUI::Appraisal_ShowRatings
-             * ItemExamineUI::Appraisal_ShowWeaponAndArmorData
-             * ItemExamineUI::Appraisal_ShowDefenseModData
-             * ItemExamineUI::Appraisal_ShowArmorMods
-             * ItemExamineUI::Appraisal_ShowShortMagicInfo
-             * ItemExamineUI::Appraisal_ShowSpecialProperties
-             * ItemExamineUI::Appraisal_ShowUsage
-             * ItemExamineUI::Appraisal_ShowLevelLimitInfo
-             * ItemExamineUI::Appraisal_ShowWieldRequirements
-             * ItemExamineUI::Appraisal_ShowUsageLimitInfo
-             * ItemExamineUI::Appraisal_ShowItemLevelInfo
-             * ItemExamineUI::Appraisal_ShowActivationRequirements
-             * ItemExamineUI::Appraisal_ShowCasterData
-             * ItemExamineUI::Appraisal_ShowBoostValue
-             * ItemExamineUI::Appraisal_ShowHealKitValues
-             * ItemExamineUI::Appraisal_ShowCapacity
-             * ItemExamineUI::Appraisal_ShowLockAppraiseInfo
-             * ItemExamineUI::Appraisal_ShowManaStoneInfo
-             * ItemExamineUI::Appraisal_ShowRemainingUses
-             * ItemExamineUI::Appraisal_ShowCraftsman
-             * if ( AppraisalProfile::InqBool(v9, 0x45u, (int *)&_prof) && !_prof )
-             *   ItemExamineUI::AddItemInfo(v3, "This item cannot be sold.", 0, 1);
-             * ItemExamineUI::Appraisal_ShowRareInfo(v3, v9);
-             * ItemExamineUI::Appraisal_ShowMagicInfo(v3, v9);
-             * ItemExamineUI::Appraisal_ShowDescription(v3, v9);
-             */
 
             Appraisal_ShowValueInfo();
             Appraisal_ShowBurdenInfo();
@@ -73,22 +45,22 @@ namespace WeenieViewer.Appraisal
             Appraisal_ShowUsageLimitInfo();
             Appraisal_ShowItemLevelInfo();
             Appraisal_ShowActivationRequirements();
-            // Appraisal_ShowCasterData();
-            // Appraisal_ShowBoostValue();
-            // Appraisal_ShowHealKitValues();
-            // Appraisal_ShowCapacity();
-            // Appraisal_ShowLockAppraiseInfo();
-            // Appraisal_ShowManaStoneInfo();
-            // Appraisal_ShowRemainingUses();
-            // Appraisal_ShowCraftsman();
+            Appraisal_ShowCasterData();
+            Appraisal_ShowBoostValue();
+            Appraisal_ShowHealKitValues();
+            Appraisal_ShowCapacity();
+            Appraisal_ShowLockAppraiseInfo();
+            Appraisal_ShowManaStoneInfo();
+            Appraisal_ShowRemainingUses();
+            Appraisal_ShowCraftsman();
 
             bool isSellbable = false;
             if (InqBool(PropertyBool.IS_SELLABLE_BOOL, ref isSellbable))
                 AddItemInfo("This item cannot be sold.");
 
-            // Appraisal_ShowRareInfo();
-            // Appraisal_ShowMagicInfo();
-            // Appraisal_ShowDescription();
+            Appraisal_ShowRareInfo();
+            Appraisal_ShowMagicInfo();
+            Appraisal_ShowDescription();
         }
         /*
          * 	Line  10308: int __thiscall AppraisalProfile::InqCreature(AppraisalProfile *this, CreatureAppraisalProfile *cap); // idb
@@ -411,7 +383,7 @@ namespace WeenieViewer.Appraisal
             return false;
         }
 
-        void Appraisal_ShowWeaponAndArmorData()
+        private void Appraisal_ShowWeaponAndArmorData()
         {
             int _valid_locations = 0; // GET THIS
             InqInt(PropertyInt.LOCATIONS_INT, ref _valid_locations);
@@ -566,8 +538,7 @@ namespace WeenieViewer.Appraisal
                 }
 
                 float wap_weapon_offense = 0;
-                InqFloat(PropertyFloat.WEAPON_OFFENSE_FLOAT, ref wap_weapon_offense);
-                if (wap_weapon_offense != 1)
+                if (InqFloat(PropertyFloat.WEAPON_OFFENSE_FLOAT, ref wap_weapon_offense) && wap_weapon_offense != 1)
                 {
                     double bonus = wap_weapon_offense - 1;
                     string mod_sign;
@@ -576,7 +547,7 @@ namespace WeenieViewer.Appraisal
                     else
                         mod_sign = "+";
 
-                    bonus = bonus * 100 + 0.5;
+                    bonus = bonus * 100;// + 0.5;
                     AddItemInfo($"Bonus to Attack Skill: {mod_sign}{bonus:F0}%.");
                 }
 
@@ -628,7 +599,7 @@ namespace WeenieViewer.Appraisal
 
         }
 
-        void Appraisal_ShowDefenseModData()
+        private void Appraisal_ShowDefenseModData()
         {
             float rDefenseModifier = 0;
             if (InqFloat((PropertyFloat)0x1Du, ref rDefenseModifier) && rDefenseModifier != 1)
@@ -650,7 +621,7 @@ namespace WeenieViewer.Appraisal
             }
         }
 
-        void Appraisal_ShowArmorMods()
+        private void Appraisal_ShowArmorMods()
         {
             int ItemType = 0;
             int ArmorLevel = 0;
@@ -719,7 +690,7 @@ namespace WeenieViewer.Appraisal
         /// <summary>
         /// Adds any spells this item has on it
         /// </summary>
-        void Appraisal_ShowShortMagicInfo()
+        private void Appraisal_ShowShortMagicInfo()
         {
             int spellDID = 0;
             if (InqDataID(PropertyDID.SPELL_DID, ref spellDID) || Weenie.SpellBook.Count > 0)
@@ -735,12 +706,12 @@ namespace WeenieViewer.Appraisal
 
                 spellTxt = spellTxt.TrimEnd(new Char[] { ' ', ',' });
 
-                AddItemInfo($"Spells: {spellTxt}", false);
+                AddItemInfo($"{spellTxt}", false);
             }
 
         }
 
-        void Appraisal_ShowSpecialProperties()
+        private void Appraisal_ShowSpecialProperties()
         {
             AddItemInfo("");
 
@@ -892,7 +863,7 @@ namespace WeenieViewer.Appraisal
 
         }
 
-        void Appraisal_ShowUsage()
+        private void Appraisal_ShowUsage()
         {
             string strUsage = "";
             if (InqString((PropertyString)0xEu, ref strUsage))
@@ -900,7 +871,7 @@ namespace WeenieViewer.Appraisal
 
         }
 
-        void Appraisal_ShowLevelLimitInfo()
+        private void Appraisal_ShowLevelLimitInfo()
         {
             int min = 0, max = 0;
             InqInt((PropertyInt)0x56u, ref min);
@@ -925,7 +896,7 @@ namespace WeenieViewer.Appraisal
                 AddItemInfo("Destination: " + portal_dest, false);
         }
 
-        void Appraisal_ShowWieldRequirements()
+        private void Appraisal_ShowWieldRequirements()
         {
             bool has_allowed_wielder = false;
             if (InqBool((PropertyBool)0x55u, ref has_allowed_wielder) && has_allowed_wielder == true)
@@ -971,7 +942,7 @@ namespace WeenieViewer.Appraisal
         /// <param name="iReq"></param>
         /// <param name="iSkill"></param>
         /// <param name="iDiff"></param>
-        void Appraisal_ShowWieldRequirements_Helper(int iReq, int iSkill, int iDiff)
+        private void Appraisal_ShowWieldRequirements_Helper(int iReq, int iSkill, int iDiff)
         {
             string strSkill = GetAppraisalStringFromRequirements(iReq, iSkill, iDiff);
             string numtxt = "";
@@ -1068,7 +1039,7 @@ namespace WeenieViewer.Appraisal
                 AddItemInfo("This cloak has a chance to reduce an incoming attack by 200 damage.", true);
         }
 
-        void Appraisal_ShowActivationRequirements()
+        private void Appraisal_ShowActivationRequirements()
         {
             string activationReqsString = "";
 
@@ -1125,8 +1096,303 @@ namespace WeenieViewer.Appraisal
                 InqString(PropertyString.CRAFTSMAN_NAME_STRING, ref activator_name);
                 AddItemInfo("This item can only be activated by " + activator_name);
             }
+        }
 
+        private void Appraisal_ShowCasterData()
+        {
+            float rManaCModifier = 0;
+            if(InqFloat((PropertyFloat)0x90u, ref rManaCModifier))
+            {
+                rManaCModifier += 1;
+                string manaCModifier = ModifierToString(rManaCModifier);
+                AddItemInfo($"Bonus to Mana Conversion: {manaCModifier}.", false);
+            }
 
+            float eleDamageModPvM = 1;
+            if (InqFloat((PropertyFloat)0x98u, ref eleDamageModPvM))
+            {
+                int damageType = 0;
+                if (InqInt((PropertyInt)0x2Du, ref damageType))
+                {
+                    string tmptxt = DamageTypeExtensions.GetDamageTypes((DamageType)damageType);
+                    string eleDamageModInfo = $"Damage bonus for {tmptxt} spells:";
+                    float eleDamageModPvP = GetElementalModPKModifier(eleDamageModPvM);
+                    tmptxt = SmallModifierToString(eleDamageModPvM);
+                    string eleDamageModTextPvM = $" vs. Monsters: {tmptxt}.";
+                    tmptxt = SmallModifierToString(eleDamageModPvP);
+                    string eleDamageModTextPvP = $" vs. Players: {tmptxt}.";
+                    AddItemInfo(eleDamageModInfo);
+                    AddItemInfo(eleDamageModTextPvM);
+                    AddItemInfo(eleDamageModTextPvP);
+                }
+            }
+        }
+
+        private void Appraisal_ShowBoostValue()
+        {
+            if (Weenie.WeenieType != 28) // Healer_WeenieType 
+            { 
+                int iBoostAmount = 0;
+                int iAttribEffected = 0;
+                if (InqInt((PropertyInt)0x5Au, ref iBoostAmount) && InqInt((PropertyInt)0x59u, ref iAttribEffected) && iBoostAmount != 0)
+                {
+                    switch (iAttribEffected)
+                    {
+                        case 2:
+                            if (iBoostAmount < 0)
+                                AddItemInfo($"Depletes {iBoostAmount} Health when used.", false);
+                            else
+                                AddItemInfo($"Restores {iBoostAmount} Health when used.", false);
+                            break;
+                        case 4:
+                            if (iBoostAmount < 0)
+                                AddItemInfo($"Depletes {iBoostAmount} Stamina when used.", false);
+                            else
+                                AddItemInfo($"Restores {iBoostAmount} Stamina when used.", false);
+                            break;
+                        case 6:
+                            if (iBoostAmount < 0)
+                                AddItemInfo($"Depletes {iBoostAmount} Mana when used.", false);
+                            else
+                                AddItemInfo($"Restores {iBoostAmount} Mana when used.", false);
+                            break;
+                    }
+                }
+            }
+        }
+
+        private void Appraisal_ShowHealKitValues()
+        {
+            if(Weenie.WeenieType == 28) // Healer_WeenieType 
+            {
+                int iBoostAmount = 0;
+                if(InqInt((PropertyInt)0x5Au, ref iBoostAmount) && iBoostAmount != 0)
+                    AddItemInfo($"Bonus to Healing Skill: {iBoostAmount}");
+                float rHealKitMod = 1.0F;
+                if(InqFloat((PropertyFloat)0x64u, ref rHealKitMod))
+                    AddItemInfo($"Restoration Bonus: {rHealKitMod * 100}%");
+            }
+        }
+
+        private void Appraisal_ShowCapacity()
+        {
+            int iItemsCapacity = 0;
+            
+            int iContainersCapacity = 0;
+            InqInt(PropertyInt.CONTAINERS_CAPACITY_INT, ref iContainersCapacity);
+            if(iItemsCapacity > 0 || iContainersCapacity > 0)
+            {
+                if (iItemsCapacity == 0)
+                    AddItemInfo($"Can hold up to {iContainersCapacity} containers.", false);
+                else if (iContainersCapacity == 0)
+                    AddItemInfo($"Can hold up to {iItemsCapacity} items.", false);
+                else
+                    AddItemInfo($"Can hold up to {iItemsCapacity} items and {iContainersCapacity} containers.", false);
+            }
+            int iMaxPages = Weenie.Book.BookMaxPages;
+            int iNumPages = Weenie.BookData.Count;
+            if (iMaxPages > 0)
+                AddItemInfo($"{iNumPages} of {iMaxPages} pages full.");
+        }
+
+        private void Appraisal_ShowLockAppraiseInfo()
+        {
+            bool locked = false;
+            int iStat = 0;
+            if (InqBool(PropertyBool.LOCKED_BOOL, ref locked))
+            {
+                if (locked)
+                {
+                    AddItemInfo("Locked", false);
+
+                    iStat = 0;
+                    if (InqInt(PropertyInt.RESIST_LOCKPICK_INT, ref iStat))
+                    {
+                        string numtxt = pseudo_LockpickSuccessPercentToString(iStat);
+                        AddItemInfo($"The lock looks {numtxt} to pick (Resistance {iStat}).");
+                    }
+                }
+                else
+                    AddItemInfo("Unlocked", true);
+            }
+            else if(InqInt(PropertyInt.RESIST_LOCKPICK_INT, ref iStat) && iStat != 0)
+            {
+                if (iStat > 0)
+                    AddItemInfo($"Bonus to Lockpick Skill: +{iStat}");
+                else
+                    AddItemInfo($"Bonus to Lockpick Skill: {iStat}");
+            }
+        }
+
+        private void Appraisal_ShowManaStoneInfo()
+        {
+            if (Weenie.SpellBook.Count == 0)
+            {
+                int iCurMana = 0;
+                if (InqInt(PropertyInt.ITEM_CUR_MANA_INT, ref iCurMana))
+                    AddItemInfo($"Stored Mana: {iCurMana}");
+
+                float rEfficiency = 0f;
+                if (InqFloat(PropertyFloat.ITEM_EFFICIENCY_FLOAT, ref rEfficiency))
+                {
+                    string numtxt = (rEfficiency * 100).ToString("N0");
+                    AddItemInfo($"Efficiency: {numtxt}%");
+                }
+
+                float rChanceOfDestruction = 0f;
+                if (InqFloat(PropertyFloat.MANA_STONE_DESTROY_CHANCE_FLOAT, ref rChanceOfDestruction))
+                {
+                    string numtxt = (rChanceOfDestruction * 100).ToString("N0");
+                    AddItemInfo($"Chance of Destruction: {numtxt}%");
+                }
+
+            }
+
+        }
+
+        private void Appraisal_ShowRemainingUses()
+        {
+            int iKeys = 0;
+            if (InqInt(PropertyInt.NUM_KEYS_INT, ref iKeys))
+            {
+                if (iKeys == 1)
+                    AddItemInfo("Contains 1 key.");
+                else
+                    AddItemInfo($"Contains {iKeys} keys.");
+            }
+
+            bool unlimited_use = false;
+            int iUses = 0;
+            InqBool(PropertyBool.UNLIMITED_USE_BOOL, ref unlimited_use);
+            if (unlimited_use == true)
+                AddItemInfo("Number of uses remaining:  Unlimited");
+            else if (InqInt(PropertyInt.STRUCTURE_INT, ref iUses))
+                AddItemInfo($"Number of uses remaining: {iUses}");
+        }
+
+        private void Appraisal_ShowCraftsman()
+        {
+            bool has_allowed_iid = false;
+            if( (!InqBool(PropertyBool.APPRAISAL_HAS_ALLOWED_WIELDER_BOOL, ref has_allowed_iid) || !has_allowed_iid) 
+                && (!InqBool(PropertyBool.APPRAISAL_HAS_ALLOWED_ACTIVATOR_BOOL, ref has_allowed_iid) || !has_allowed_iid) )
+            {
+                string strCraftsman = "";
+                if (InqString(PropertyString.CRAFTSMAN_NAME_STRING, ref strCraftsman))
+                    AddItemInfo($"Created by {strCraftsman}.");
+            }
+        }
+
+        private void Appraisal_ShowRareInfo()
+        {
+            bool rareUsesTimer = false;
+            if (InqBool(PropertyBool.RARE_USES_TIMER_BOOL, ref rareUsesTimer) && rareUsesTimer)
+                AddItemInfo("\"This rare item has a timer restriction of 3 minutes. You will not be able to use another rare item with a timer within 3 minutes of using this one.", false);
+
+            int iRareID = 0;
+            if (InqInt(PropertyInt.RARE_ID_INT, ref iRareID))
+                AddItemInfo($"Rare #{iRareID}", false);
+        }
+
+        private void Appraisal_ShowMagicInfo()
+        {
+            if(Weenie.SpellBook.Count > 0)
+            {
+                // "Spell Descriptions:"
+
+                int iSpellcraft = 0;
+                if (InqInt(PropertyInt.ITEM_SPELLCRAFT_INT, ref iSpellcraft))
+                    AddItemInfo($"Spellcraft: {iSpellcraft}.");
+
+                int iCurMana = 0;
+                int iManaCost = 0;
+                if (InqInt(PropertyInt.ITEM_CUR_MANA_INT, ref iCurMana) && InqInt(PropertyInt.ITEM_MAX_MANA_INT, ref iManaCost))
+                    AddItemInfo($"Mana: {iCurMana} / {iManaCost}.");
+
+                float rManaRate = 0f;
+                iManaCost = 0;
+                if (InqFloat(PropertyFloat.MANA_RATE_FLOAT, ref rManaRate))
+                {
+                    var v30 = 1.0 / rManaRate;
+                    if (v30 < 0) v30 = v30 * -1;
+                    AddItemInfo($"Mana Cost: 1 point per {v30:N0} seconds.");
+                }
+                else if(InqInt(PropertyInt.ITEM_MANA_COST_INT, ref iManaCost))
+                {
+                    if (iManaCost <= 0)
+                        AddItemInfo($"Mana Cost: {iManaCost}.");
+                    else
+                        AddItemInfo($"Mana Cost: {iManaCost}.\n(Can be reduced by the Mana Conversion skill)");
+                }
+                AddItemInfo("");
+
+            }
+        }
+
+        private void Appraisal_ShowDescription()
+        {
+            int lifespan = 0;
+            if(InqInt(PropertyInt.LIFESPAN_INT, ref lifespan))
+            {
+                string remaining = DeltaTimeToString((float)lifespan);
+                AddItemInfo("This item expires in " + remaining);
+            }
+
+            string strDesc = "";
+            if (InqString(PropertyString.LONG_DESC_STRING, ref strDesc))
+            {
+                // TODO
+                string gearPlatingName = "";
+                if (InqString(PropertyString.GEAR_PLATING_NAME_STRING, ref gearPlatingName))
+                    strDesc = gearPlatingName;
+
+                int iDecoration = 0;
+                string strMaterial = "";
+                if (InqInt(PropertyInt.APPRAISAL_LONG_DESC_DECORATION_INT, ref iDecoration))
+                {
+                    int iGemCount = 0;
+                    if ((iDecoration & 1) != 0 && InqInt(PropertyInt.ITEM_WORKMANSHIP_INT, ref iGemCount))
+                    {
+                        // More here. Is any of this even applicable to the stock DB?
+                    }
+                }
+
+            }
+            else 
+                InqString(PropertyString.SHORT_DESC_STRING, ref strDesc);
+
+            if(strDesc != "")
+            {
+                AddItemInfo("");
+                AddItemInfo(strDesc);
+            }
+
+            int bitfield = 0;
+            if(InqInt(PropertyInt.PORTAL_BITMASK_INT, ref bitfield))
+            {
+                string portalDesc = "";
+                if ((bitfield & 2) != 0)
+                    portalDesc += "Player Killers may not use this portal.\n";
+                if ((bitfield & 4) != 0)
+                    portalDesc += "Lite Player Killers may not use this portal.\n";
+                if ((bitfield & 8) != 0)
+                    portalDesc += "Non-Player Killers may not use this portal.\n";
+                if ((bitfield & 0x20) != 0)
+                    portalDesc += "This portal cannot be recalled nor linked to.\n";
+                if ((bitfield & 0x10) != 0)
+                    portalDesc += "This portal cannot be summoned.\n";
+
+                if(portalDesc.Length > 0)
+                {
+                    AddItemInfo("");
+                    AddItemInfo(portalDesc);
+                }
+            }
+
+            long cost = 0;
+            if(InqInt64(PropertyInt64.AUGMENTATION_COST_INT64, ref cost))
+            {
+                AddItemInfo($"Using this gem will drain {cost:N0} points of your available experience.");
+            }
         }
     }
 }

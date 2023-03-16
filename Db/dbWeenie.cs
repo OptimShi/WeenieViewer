@@ -21,8 +21,7 @@ namespace WeenieViewer.Db
         public Dictionary<PropertyString, string> Strings;
         public List<SpellBook> SpellBook; // SpellID, Probability
 
-        public int BookMaxPages;
-        public int BookMaxCharsPerPage;
+        public Book Book;
         public Dictionary<int, BookPageData> BookData;
         
         public int WeenieType;

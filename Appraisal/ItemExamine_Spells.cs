@@ -12,7 +12,7 @@ namespace WeenieViewer.Appraisal
 
         private string GetSpellName(int spellId)
         {
-            return "SPELL_NAME_TBD";
+            return "SPELL_NAME_FROM_DID";
         }
 
         private string GetSpellDescription(int spellId)

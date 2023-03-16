@@ -96,6 +96,7 @@
     </Compile>
     <Compile Include="Db\DbManager.cs" />
     <Compile Include="Db\dbWeenie.cs" />
+    <Compile Include="Db\weenie\Book.cs" />
     <Compile Include="Db\weenie\BookPageData.cs" />
     <Compile Include="Db\weenie\SpellBook.cs" />
     <Compile Include="Enums\CreatureType.cs" />
