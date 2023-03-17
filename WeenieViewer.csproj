@@ -157,9 +157,6 @@
   <ItemGroup>
     <Resource Include="WeenieViewer.ico" />
   </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Enums\WeenieViewer.ico" />
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

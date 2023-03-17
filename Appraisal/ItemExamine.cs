@@ -681,11 +681,15 @@ namespace WeenieViewer.Appraisal
         private void Appraisal_ShowShortMagicInfo()
         {
             int spellDID = 0;
-            if (InqDataID(PropertyDID.SPELL_DID, ref spellDID) || Weenie.SpellBook.Count > 0)
+            int procSpellDID = 0;
+            if (InqDataID(PropertyDID.SPELL_DID, ref spellDID) || InqDataID(PropertyDID.PROC_SPELL_DID, ref procSpellDID) || Weenie.SpellBook.Count > 0)
             {
                 string spellTxt = "Spells: ";
                 if (spellDID > 0)
                     spellTxt += GetSpellName(spellDID) + ", ";
+
+                if (procSpellDID > 0)
+                    spellTxt += GetSpellName(procSpellDID) + ", ";
 
                 foreach (var spell in Weenie.SpellBook)
                 {
@@ -729,7 +733,7 @@ namespace WeenieViewer.Appraisal
                 else
                 {
                     string slayer = CreatureExtensions.ToSentence((CreatureType)creatureType);
-                    AddItemInfo($"{slayer} slayer");
+                    properties += $"{slayer} slayer, ";
                 }
             }
 

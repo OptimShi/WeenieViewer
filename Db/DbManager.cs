@@ -15,7 +15,7 @@ using WeenieViewer.Enums;
 
 namespace WeenieViewer.Db
 {
-    internal class DbManager
+    public class DbManager
     {
         SQLiteConnection sqlite;
         public string Version = "";
@@ -24,7 +24,9 @@ namespace WeenieViewer.Db
         public void Connect()
         {
             string dbName = Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "ace_world.db");
+#if DEBUG
             dbName = "D:\\Web Development\\sqlite\\ace_world.db"; // For Testing Purposes
+#endif
             if (!File.Exists(dbName))
             {
                 //throw new FileNotFoundException("Could Not Find 'ace_world.db'");
@@ -37,6 +39,8 @@ namespace WeenieViewer.Db
             sqlite.Open();
 
             GetVersion();
+
+            LoadSpells();
         }
 
         public void Disconnect()

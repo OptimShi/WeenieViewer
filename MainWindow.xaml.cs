@@ -22,7 +22,7 @@ namespace WeenieViewer
     /// </summary>
     public partial class MainWindow : Window
     {
-        DbManager db;
+        public DbManager db;
 
         public MainWindow()
         {
