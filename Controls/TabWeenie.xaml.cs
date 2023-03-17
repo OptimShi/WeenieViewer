@@ -15,6 +15,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using WeenieViewer.Appraisal;
 using WeenieViewer.Db;
+using WeenieViewer.Enums;
 
 namespace WeenieViewer
 {
@@ -23,6 +24,9 @@ namespace WeenieViewer
     /// </summary>
     public partial class TabWeenie : UserControl
     {
+
+        private dbWeenie _Weenie;
+
         public TabWeenie()
         {
             InitializeComponent();
@@ -37,15 +41,151 @@ namespace WeenieViewer
         public void DisplayWeenie(dbWeenie Weenie)
         {
             if (Weenie == null) { return; }
-
+            _Weenie = Weenie;
             //tabItem.Visibility = Visibility.Collapsed;
             tabEmotes.Visibility = Visibility.Collapsed;
             
-            ItemExamine appraisal = new ItemExamine(Weenie);
             FlowDocument myFlowDoc = new FlowDocument();
-            Paragraph myParagraph = new Paragraph();
-            myParagraph.Inlines.Add(appraisal.Text);
-            myFlowDoc.Blocks.Add(myParagraph);
+
+            ItemExamine appraisal = new ItemExamine(Weenie);
+            if (Weenie.IsCreature())
+            {
+                tabItem.Header = "Stats";
+
+                string info = appraisal.GetCreatureInfo();
+
+                //var ratings = appraisal.GetRatings();
+                Paragraph myParagraph = new Paragraph();
+                // Name, Level, Heritage, Title, etc
+                myParagraph.Inlines.Add(info);
+                myFlowDoc.Blocks.Add(myParagraph);
+
+                // Stats
+                Table myTable = new Table();
+
+                TableColumn attNameColumn = new TableColumn();
+                TableColumn attValColumn = new TableColumn();
+                attNameColumn.Width = new GridLength(150);
+                attValColumn.Width = new GridLength(75);
+                myTable.Columns.Add(attNameColumn);
+                myTable.Columns.Add(attValColumn);
+
+                var attRowGroup = new TableRowGroup();
+                myTable.RowGroups.Add(attRowGroup);
+
+                foreach (var k in Weenie.Attributes.OrderBy(x => x.Key))
+                {
+                    string attName;
+                    switch (k.Key)
+                    {
+                        case 1: attName = "Strength"; break;
+                        case 2: attName = "Endurance"; break;
+                        case 3: attName = "Quickness"; break;
+                        case 4: attName = "Coordination"; break;
+                        case 5: attName = "Focus"; break;
+                        case 6: attName = "Self"; break;
+                        default: continue;
+                    }
+                    var currentRow = new TableRow();
+                    currentRow.Cells.Add(new TableCell(new Paragraph(new Run(attName))));
+                    var value = new Paragraph(new Run(k.Value.init_level.ToString()));
+                    value.TextAlignment = TextAlignment.Right;
+                    currentRow.Cells.Add(new TableCell(value));
+
+                    if(attRowGroup.Rows.Count %2 == 1)
+                        currentRow.Background = Brushes.LightGray;
+
+                    attRowGroup.Rows.Add(currentRow);
+                }
+
+                var att2ndRowGroup = new TableRowGroup();
+                myTable.RowGroups.Add(att2ndRowGroup);
+                foreach (var k in Weenie.Attributes2nd.OrderBy(x => x.Key))
+                {
+                    string attName;
+                    switch (k.Key)
+                    {
+                        case 1: attName = "Health"; break;
+                        case 2: attName = "Endurance"; break;
+                        case 3: attName = "Stamina"; break;
+                        case 4: attName = "Quickness"; break;
+                        case 5: attName = "Mana"; break;
+                        case 6: attName = "Self"; break;
+                        default: continue;
+                    }
+                    var currentRow = new TableRow();
+                    currentRow.Cells.Add(new TableCell(new Paragraph(new Run(attName))));
+                    var value = new Paragraph(new Run(k.Value.current_level.ToString()));
+                    value.TextAlignment = TextAlignment.Right;
+                    currentRow.Cells.Add(new TableCell(value));
+
+                    if (att2ndRowGroup.Rows.Count % 2 == 1)
+                        currentRow.Background = Brushes.LightGray;
+
+                    att2ndRowGroup.Rows.Add(currentRow);
+                }
+
+                // SKILLS
+                var specSkills = new Dictionary<int, Db.weenie.Skill>();
+                foreach (var x in Weenie.Skills.Select(r => r).Where(x => x.Value.sac == 3)) 
+                {
+                    specSkills.Add(x.Key, x.Value);
+                }
+                if (specSkills.Count > 0)
+                {
+                    Color purple = Color.FromRgb(50, 29, 92);
+                    Color purpleBlack = Color.FromRgb(24, 6, 67);
+                    var rowGroup = AddSkillsToTable(specSkills, "Specialized Skills", purple);
+                    myTable.RowGroups.Add(rowGroup);
+                }
+
+                var trainedSkills = new Dictionary<int, Db.weenie.Skill>();
+                foreach (var x in Weenie.Skills.Select(r => r).Where(x => x.Value.sac == 2))
+                {
+                    trainedSkills.Add(x.Key, x.Value);
+                }
+                if (trainedSkills.Count > 0)
+                {
+                    Color teal = Color.FromRgb(51, 83, 82);
+                    Color tealDark = Color.FromRgb(24, 6, 67);
+                    var rowGroup = AddSkillsToTable(trainedSkills, "Trained Skills", teal);
+                    myTable.RowGroups.Add(rowGroup);
+                }
+
+                var untrainedSkills = new Dictionary<int, Db.weenie.Skill>();
+                foreach (var x in Weenie.Skills.Select(r => r).Where(x => x.Value.sac == 1))
+                {
+                    untrainedSkills.Add(x.Key, x.Value);
+                }
+                if (untrainedSkills.Count > 0)
+                {
+                    Color yellow = Color.FromRgb(88, 67, 31);
+                    var rowGroup = AddSkillsToTable(untrainedSkills, "Untrained Skills", yellow);
+                    myTable.RowGroups.Add(rowGroup);
+                }
+
+                var unusableSkills = new Dictionary<int, Db.weenie.Skill>();
+                foreach (var x in Weenie.Skills.Select(r => r).Where(x => x.Value.sac == 0))
+                {
+                    unusableSkills.Add(x.Key, x.Value);
+                }
+                if (unusableSkills.Count > 0)
+                {
+                    Color grey = Color.FromRgb(83, 83, 83);
+                    var rowGroup = AddSkillsToTable(unusableSkills, "Unusable Skills", grey);
+                    myTable.RowGroups.Add(rowGroup);
+                }
+
+                myFlowDoc.Blocks.Add(myTable);
+
+            }
+            else
+            {
+                Paragraph myParagraph = new Paragraph();
+                myParagraph.Inlines.Add(appraisal.Text);
+                myFlowDoc.Blocks.Add(myParagraph);
+            }
+
             txtInfo.Document = myFlowDoc;
             txtInfo.IsReadOnly = true;
 
@@ -100,7 +240,45 @@ namespace WeenieViewer
                 dgProps.Items.Add(item);
             }
 
-            tabProps.IsSelected = true;
+            //tabProps.IsSelected = true;
+            tabItem.IsSelected = true;
+        }
+
+        private TableRowGroup AddSkillsToTable(Dictionary<int, WeenieViewer.Db.weenie.Skill> weenieSkills, string title, Color bgColor)
+        {
+            Dictionary<string, int> skills = new Dictionary<string, int>();
+            foreach (var k in weenieSkills)
+            {
+                var skillName = SkillExtensions.GetSkillName((Skill)k.Key);
+                skills.Add(skillName, k.Value.CurrentValue);
+            }
+
+            var skillRowGroup = new TableRowGroup();
+            var titleRow = new TableRow();
+            var labelCell = new TableCell(new Paragraph(new Run(title) { Foreground = Brushes.White }));
+            labelCell.ColumnSpan = 2;
+            titleRow.Cells.Add(labelCell);
+            Color purple = Color.FromRgb(50, 29, 92);
+            Color purpleBlack = Color.FromRgb(24, 6, 67);
+            titleRow.Background = new SolidColorBrush(bgColor);
+            skillRowGroup.Rows.Add(titleRow);
+
+            foreach (var k in skills.OrderBy(x => x.Key))
+            {
+                var currentRow = new TableRow();
+                currentRow.Cells.Add(new TableCell(new Paragraph(new Run(k.Key))));
+                var value = new Paragraph(new Run(k.Value.ToString()));
+                value.TextAlignment = TextAlignment.Right;
+                currentRow.Cells.Add(new TableCell(value));
+
+                if (skillRowGroup.Rows.Count % 2 == 0)
+                    currentRow.Background = Brushes.LightGray;
+
+                skillRowGroup.Rows.Add(currentRow);
+
+            }
+               
+            return skillRowGroup;
         }
     }
 }
