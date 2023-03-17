@@ -83,6 +83,7 @@
     <Compile Include="Appraisal\CreatureExamine.cs" />
     <Compile Include="Appraisal\ItemExamine.cs" />
     <Compile Include="Appraisal\ItemExamine_Spells.cs" />
+    <Compile Include="Appraisal\ItemExamine_Titles.cs" />
     <Compile Include="Appraisal\ItemExamine_Utils.cs" />
     <Compile Include="Controls\TabWeenie.xaml.cs">
       <DependentUpon>TabWeenie.xaml</DependentUpon>
@@ -113,6 +114,7 @@
     <Compile Include="Enums\PropertyInt64.cs" />
     <Compile Include="Enums\PropertyString.cs" />
     <Compile Include="Enums\Skill.cs" />
+    <Compile Include="Enums\WeenieType.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>

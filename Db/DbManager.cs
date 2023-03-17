@@ -182,6 +182,11 @@ namespace WeenieViewer.Db
             weenie.Attributes = _GetAttributes(wcid);
             weenie.Attributes2nd = _GetAttributes2nd(wcid);
             weenie.Skills = _GetSkills(wcid);
+            foreach(var s in weenie.Skills)
+            {
+                s.Value.CurrentValue = weenie.GetSkillLevel(s.Key);
+                //weenie.Skills[s.Key] = s.Value;
+            }
 
             return weenie;
         }

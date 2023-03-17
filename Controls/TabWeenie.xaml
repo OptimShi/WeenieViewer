@@ -10,7 +10,7 @@
         <TabControl>
             <TabItem Header="Item" x:Name="tabItem">
                 <Grid Background="#FFE5E5E5">
-                    <RichTextBox x:Name="txtInfo" Grid.ColumnSpan="2">
+                    <RichTextBox x:Name="txtInfo" Grid.ColumnSpan="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True">
                         <FlowDocument>
                             <Paragraph>
                                 <Run Text="RichTextBox"/>
@@ -21,7 +21,11 @@
             </TabItem>
             <TabItem Header="Properties" x:Name="tabProps">
                 <Grid>
-                    <DataGrid x:Name="dgProps" Margin="0,0,0,0" AutoGenerateColumns="False" HorizontalGridLinesBrush="#FF767575" VerticalGridLinesBrush="#FF747474" CanUserAddRows="False" CanUserDeleteRows="False" CanUserReorderColumns="False" MinWidth="5" CanUserResizeRows="False">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="7*"/>
+                        <ColumnDefinition Width="787*"/>
+                    </Grid.ColumnDefinitions>
+                    <DataGrid x:Name="dgProps" AutoGenerateColumns="False" HorizontalGridLinesBrush="#FF767575" VerticalGridLinesBrush="#FF747474" CanUserAddRows="False" CanUserDeleteRows="False" CanUserReorderColumns="False" MinWidth="5" CanUserResizeRows="False" Grid.ColumnSpan="2">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Property" Binding="{Binding Path=propertyType}" IsReadOnly="True" Width="1*"/>
                             <DataGridTextColumn Header="Value" Binding="{Binding Path=propertyValue}" IsReadOnly="True" Width="1*"></DataGridTextColumn>

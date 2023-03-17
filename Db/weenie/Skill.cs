@@ -15,5 +15,7 @@ namespace WeenieViewer.Db.weenie
         public int init_level;
         public int resistant_at_last_check;
         public double last_used_time;
+
+        public int CurrentValue;
     }
 }

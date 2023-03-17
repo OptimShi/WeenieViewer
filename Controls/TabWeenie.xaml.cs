@@ -24,6 +24,9 @@ namespace WeenieViewer
     /// </summary>
     public partial class TabWeenie : UserControl
     {
+
+        private dbWeenie _Weenie;
+
         public TabWeenie()
         {
             InitializeComponent();
@@ -38,7 +41,7 @@ namespace WeenieViewer
         public void DisplayWeenie(dbWeenie Weenie)
         {
             if (Weenie == null) { return; }
-
+            _Weenie = Weenie;
             //tabItem.Visibility = Visibility.Collapsed;
             tabEmotes.Visibility = Visibility.Collapsed;
             
@@ -47,10 +50,15 @@ namespace WeenieViewer
             ItemExamine appraisal = new ItemExamine(Weenie);
             if (Weenie.IsCreature())
             {
-                appraisal.GetAsCreature();
+                tabItem.Header = "Stats";
+
+                string info = appraisal.GetCreatureInfo();
+
+                //var ratings = appraisal.GetRatings();
                 Paragraph myParagraph = new Paragraph();
                 // Name, Level, Heritage, Title, etc
-                myParagraph.Inlines.Add(appraisal.Text);
+                myParagraph.Inlines.Add(info);
+                myFlowDoc.Blocks.Add(myParagraph);
 
                 // Stats
                 Table myTable = new Table();
@@ -72,8 +80,8 @@ namespace WeenieViewer
                     {
                         case 1: attName = "Strength"; break;
                         case 2: attName = "Endurance"; break;
-                        case 3: attName = "Coordination"; break;
-                        case 4: attName = "Quickness"; break;
+                        case 3: attName = "Quickness"; break;
+                        case 4: attName = "Coordination"; break;
                         case 5: attName = "Focus"; break;
                         case 6: attName = "Self"; break;
                         default: continue;
@@ -242,7 +250,7 @@ namespace WeenieViewer
             foreach (var k in weenieSkills)
             {
                 var skillName = SkillExtensions.GetSkillName((Skill)k.Key);
-                skills.Add(skillName, k.Value.init_level);
+                skills.Add(skillName, k.Value.CurrentValue);
             }
 
             var skillRowGroup = new TableRowGroup();
