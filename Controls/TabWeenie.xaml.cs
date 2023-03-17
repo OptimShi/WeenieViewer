@@ -127,7 +127,7 @@ namespace WeenieViewer
                 {
                     Color purple = Color.FromRgb(50, 29, 92);
                     Color purpleBlack = Color.FromRgb(24, 6, 67);
-                    var rowGroup = AddSkillsToTable(specSkills, "Specialized Skills", purple, purpleBlack);
+                    var rowGroup = AddSkillsToTable(specSkills, "Specialized Skills", purple);
                     myTable.RowGroups.Add(rowGroup);
                 }
 
@@ -138,35 +138,33 @@ namespace WeenieViewer
                 }
                 if (trainedSkills.Count > 0)
                 {
-                    Color purple = Color.FromRgb(50, 29, 92);
-                    Color purpleBlack = Color.FromRgb(24, 6, 67);
-                    var rowGroup = AddSkillsToTable(trainedSkills, "Trained Skills", purple, purpleBlack);
+                    Color teal = Color.FromRgb(51, 83, 82);
+                    Color tealDark = Color.FromRgb(24, 6, 67);
+                    var rowGroup = AddSkillsToTable(trainedSkills, "Trained Skills", teal);
                     myTable.RowGroups.Add(rowGroup);
                 }
 
                 var untrainedSkills = new Dictionary<int, Db.weenie.Skill>();
-                foreach (var x in Weenie.Skills.Select(r => r).Where(x => x.Value.sac == 2))
+                foreach (var x in Weenie.Skills.Select(r => r).Where(x => x.Value.sac == 1))
                 {
                     untrainedSkills.Add(x.Key, x.Value);
                 }
                 if (untrainedSkills.Count > 0)
                 {
-                    Color purple = Color.FromRgb(50, 29, 92);
-                    Color purpleBlack = Color.FromRgb(24, 6, 67);
-                    var rowGroup = AddSkillsToTable(untrainedSkills, "Untrained Skills", purple, purpleBlack);
+                    Color yellow = Color.FromRgb(88, 67, 31);
+                    var rowGroup = AddSkillsToTable(untrainedSkills, "Untrained Skills", yellow);
                     myTable.RowGroups.Add(rowGroup);
                 }
 
                 var unusableSkills = new Dictionary<int, Db.weenie.Skill>();
-                foreach (var x in Weenie.Skills.Select(r => r).Where(x => x.Value.sac == 2))
+                foreach (var x in Weenie.Skills.Select(r => r).Where(x => x.Value.sac == 0))
                 {
                     unusableSkills.Add(x.Key, x.Value);
                 }
                 if (unusableSkills.Count > 0)
                 {
-                    Color purple = Color.FromRgb(50, 29, 92);
-                    Color purpleBlack = Color.FromRgb(24, 6, 67);
-                    var rowGroup = AddSkillsToTable(unusableSkills, "Unusable Skills", purple, purpleBlack);
+                    Color grey = Color.FromRgb(83, 83, 83);
+                    var rowGroup = AddSkillsToTable(unusableSkills, "Unusable Skills", grey);
                     myTable.RowGroups.Add(rowGroup);
                 }
 
@@ -238,7 +236,7 @@ namespace WeenieViewer
             tabItem.IsSelected = true;
         }
 
-        private TableRowGroup AddSkillsToTable(Dictionary<int, WeenieViewer.Db.weenie.Skill> weenieSkills, string title, Color startColor, Color endColor)
+        private TableRowGroup AddSkillsToTable(Dictionary<int, WeenieViewer.Db.weenie.Skill> weenieSkills, string title, Color bgColor)
         {
             Dictionary<string, int> skills = new Dictionary<string, int>();
             foreach (var k in weenieSkills)
@@ -254,7 +252,7 @@ namespace WeenieViewer
             titleRow.Cells.Add(labelCell);
             Color purple = Color.FromRgb(50, 29, 92);
             Color purpleBlack = Color.FromRgb(24, 6, 67);
-            titleRow.Background = new LinearGradientBrush(startColor, endColor, 0);
+            titleRow.Background = new SolidColorBrush(bgColor);
             skillRowGroup.Rows.Add(titleRow);
 
             foreach (var k in skills.OrderBy(x => x.Key))
