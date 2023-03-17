@@ -82,11 +82,23 @@ namespace WeenieViewer.Enums
         {
             switch ((int)skill)
             {
+                case 1: return "Axe";
+                case 2: return "Bow";
+                case 3: return "Crossbow";
+                case 4: return "Dagger";
+                case 5: return "Mace";
                 case 6: return "Melee Defense";
                 case 7: return "Missile Defense";
+                // case 8 : SLING
+                case 9: return "Spear";
+                case 10: return "Staff";
+                case 11: return "Sword";
+                case 12: return "Thrown Weapons";
+                case 13: return "Unarmed Combat";
                 case 14: return "Arcane Lore";
                 case 15: return "Magic Defense";
                 case 16: return "Mana Conversion";
+                    // SPELLCRAFT
                 case 18: return "Item Tinkering";
                 case 19: return "Assess Person";
                 case 20: return "Deception";
@@ -94,6 +106,8 @@ namespace WeenieViewer.Enums
                 case 22: return "Jump";
                 case 23: return "Lockpick";
                 case 24: return "Run";
+                //Awareness
+                //ArmsAndArmorRepair
                 case 27: return "Assess Creature";
                 case 28: return "Weapon Tinkering";
                 case 29: return "Armor Tinkering";

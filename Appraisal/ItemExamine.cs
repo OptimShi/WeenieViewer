@@ -62,25 +62,13 @@ namespace WeenieViewer.Appraisal
             Appraisal_ShowMagicInfo();
             Appraisal_ShowDescription();
         }
-        /*
-         * 	Line  10308: int __thiscall AppraisalProfile::InqCreature(AppraisalProfile *this, CreatureAppraisalProfile *cap); // idb
-	Line  10322: int __thiscall AppraisalProfile::InqArmor(AppraisalProfile *this, ArmorProfile *aap); // idb
-	Line  10330: int __thiscall AppraisalProfile::InqWeapon(AppraisalProfile *this, WeaponProfile *wap); // idb
-	Line  10331: int __thiscall AppraisalProfile::InqInt(AppraisalProfile *this, unsigned int stype, int *retval); // idb
-	Line  10332: int __thiscall AppraisalProfile::InqInt64(AppraisalProfile *this, unsigned int stype, __int64 *retval); // idb
-	Line  10333: int __thiscall AppraisalProfile::InqBool(AppraisalProfile *this, unsigned int stype, int *retval); // idb
-	Line  10334: int __thiscall AppraisalProfile::InqFloat(AppraisalProfile *this, unsigned int stype, long double *retval); // idb
-	Line  10335: int __thiscall AppraisalProfile::InqDataID(AppraisalProfile *this, unsigned int stype, IDClass<_tagDataID,32,0> *retval); // idb
-	Line  10337: int __thiscall AppraisalProfile::InqString(AppraisalProfile *this, unsigned int stype, AC1Legacy::PStringBase<char> *retval); // idb
-
-        */
-
+    
         private void AddItemInfo(string text, bool surpressDoubleSpacing = true)
         {
             Text += text + "\n";
             if (!surpressDoubleSpacing) Text += "\n";
         }
-        private bool SkillToString(Skill skill, ref string value)
+        private bool SkillToString(Enums.Skill skill, ref string value)
         {
             value = SkillExtensions.ToSentence(skill);
             if (value != "")
@@ -434,7 +422,7 @@ namespace WeenieViewer.Appraisal
                             }
                         }
                         string weaponSkill = "";
-                        SkillToString((Skill)iWeaponSkill, ref weaponSkill);
+                        SkillToString((Enums.Skill)iWeaponSkill, ref weaponSkill);
                         AddItemInfo(ps + weaponSkill + rhs);
                     }
 

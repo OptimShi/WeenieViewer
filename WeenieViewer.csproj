@@ -80,6 +80,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Appraisal\CreatureExamine.cs" />
     <Compile Include="Appraisal\ItemExamine.cs" />
     <Compile Include="Appraisal\ItemExamine_Spells.cs" />
     <Compile Include="Appraisal\ItemExamine_Utils.cs" />
@@ -96,8 +97,11 @@
     </Compile>
     <Compile Include="Db\DbManager.cs" />
     <Compile Include="Db\dbWeenie.cs" />
+    <Compile Include="Db\weenie\Attributes.cs" />
+    <Compile Include="Db\weenie\Attributes2nd.cs" />
     <Compile Include="Db\weenie\Book.cs" />
     <Compile Include="Db\weenie\BookPageData.cs" />
+    <Compile Include="Db\weenie\Skill.cs" />
     <Compile Include="Db\weenie\SpellBook.cs" />
     <Compile Include="Enums\CreatureType.cs" />
     <Compile Include="Enums\DamageType.cs" />
