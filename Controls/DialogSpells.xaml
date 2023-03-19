@@ -16,8 +16,7 @@
         <Canvas Grid.Row="0">
         <Label Content="Name:" HorizontalAlignment="Left" VerticalAlignment="Top" RenderTransformOrigin="0.5,1.173" Margin="19,10,0,0"/>
         <TextBox Name="txtSpellName" HorizontalAlignment="Left" Height="24" Margin="63,12,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="156"/>
-        <Button Content="OK" HorizontalAlignment="Left" Margin="63,49,0,0" VerticalAlignment="Top" Width="75" IsDefault="True" />
-        <Button Content="Cancel" HorizontalAlignment="Left" Margin="144,49,0,0" VerticalAlignment="Top" Width="75" RenderTransformOrigin="0.884,0.55" IsCancel="True"/>
+            <Button Content="Close" HorizontalAlignment="Left" Margin="144,49,0,0" VerticalAlignment="Top" Width="75" RenderTransformOrigin="0.884,0.55" IsCancel="True"/>
         </Canvas>
         <DataGrid x:Name="dgSpellResults" Grid.Row="1">
             <DataGrid.Columns>

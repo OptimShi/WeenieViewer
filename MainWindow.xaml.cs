@@ -160,6 +160,10 @@ namespace WeenieViewer
                 RoutedCommand firstSettings = new RoutedCommand();
                 firstSettings.InputGestures.Add(new KeyGesture(Key.W, ModifierKeys.Control));
                 CommandBindings.Add(new CommandBinding(firstSettings, CloseTab));
+
+                var spellSearch = new RoutedCommand();
+                spellSearch.InputGestures.Add(new KeyGesture(Key.S, ModifierKeys.Control));
+                CommandBindings.Add(new CommandBinding(spellSearch, miSearchSpells_Click));
             }
             catch (Exception Err) { }
         }
@@ -177,6 +181,7 @@ namespace WeenieViewer
         private void miSearchSpells_Click(object sender, RoutedEventArgs e)
         {
             var spellSearch = new DialogSpells();
+            spellSearch.Owner = this;
             spellSearch.ShowDialog();
         }
     }
