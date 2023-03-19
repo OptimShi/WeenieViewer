@@ -25,6 +25,7 @@
             </MenuItem>
             <MenuItem Header="Search">
                 <MenuItem x:Name="miSearchWeenies" Header="Weenies..." Click="miSearchWeenies_Click"/>
+                <MenuItem x:Name="miSearchSpells" Header="Spells..." Click="miSearchSpells_Click" InputGestureText="Ctrl+S" />
             </MenuItem>
         </Menu>
         <Canvas Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Height="30">

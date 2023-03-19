@@ -85,9 +85,16 @@
     <Compile Include="Appraisal\ItemExamine_Spells.cs" />
     <Compile Include="Appraisal\ItemExamine_Titles.cs" />
     <Compile Include="Appraisal\ItemExamine_Utils.cs" />
+    <Compile Include="Controls\DialogSpells.xaml.cs">
+      <DependentUpon>DialogSpells.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\TabWeenie.xaml.cs">
       <DependentUpon>TabWeenie.xaml</DependentUpon>
     </Compile>
+    <Page Include="Controls\DialogSpells.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

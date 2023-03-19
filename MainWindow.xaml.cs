@@ -13,6 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using WeenieViewer.Controls;
 using WeenieViewer.Db;
 
 namespace WeenieViewer
@@ -159,6 +160,10 @@ namespace WeenieViewer
                 RoutedCommand firstSettings = new RoutedCommand();
                 firstSettings.InputGestures.Add(new KeyGesture(Key.W, ModifierKeys.Control));
                 CommandBindings.Add(new CommandBinding(firstSettings, CloseTab));
+
+                var spellSearch = new RoutedCommand();
+                spellSearch.InputGestures.Add(new KeyGesture(Key.S, ModifierKeys.Control));
+                CommandBindings.Add(new CommandBinding(spellSearch, miSearchSpells_Click));
             }
             catch (Exception Err) { }
         }
@@ -171,6 +176,13 @@ namespace WeenieViewer
             {
                 tabGroup.Items.Remove(ti);
             }
+        }
+
+        private void miSearchSpells_Click(object sender, RoutedEventArgs e)
+        {
+            var spellSearch = new DialogSpells();
+            spellSearch.Owner = this;
+            spellSearch.ShowDialog();
         }
     }
 }
