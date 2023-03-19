@@ -13,6 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using WeenieViewer.Controls;
 using WeenieViewer.Db;
 
 namespace WeenieViewer
@@ -171,6 +172,12 @@ namespace WeenieViewer
             {
                 tabGroup.Items.Remove(ti);
             }
+        }
+
+        private void miSearchSpells_Click(object sender, RoutedEventArgs e)
+        {
+            var spellSearch = new DialogSpells();
+            spellSearch.ShowDialog();
         }
     }
 }

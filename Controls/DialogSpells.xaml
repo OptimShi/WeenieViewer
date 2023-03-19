@@ -1,0 +1,31 @@
+﻿<Window x:Class="WeenieViewer.Controls.DialogSpells"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        WindowStartupLocation="CenterScreen" 
+        FocusManager.FocusedElement="{Binding ElementName=txtSpellName}"
+        ShowInTaskbar="False"
+        Title="Search Spells..." Height="335" Width="271" >
+    <Grid Margin="0,0,0,0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="125" />
+            <RowDefinition Height=".1*" />
+        </Grid.RowDefinitions>
+        <Canvas Grid.Row="0">
+        <Label Content="Name:" HorizontalAlignment="Left" VerticalAlignment="Top" RenderTransformOrigin="0.5,1.173" Margin="19,10,0,0"/>
+        <TextBox Name="txtSpellName" HorizontalAlignment="Left" Height="24" Margin="63,12,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="156"/>
+        <Button Content="OK" HorizontalAlignment="Left" Margin="63,49,0,0" VerticalAlignment="Top" Width="75" IsDefault="True" />
+        <Button Content="Cancel" HorizontalAlignment="Left" Margin="144,49,0,0" VerticalAlignment="Top" Width="75" RenderTransformOrigin="0.884,0.55" IsCancel="True"/>
+        </Canvas>
+        <DataGrid x:Name="dgSpellResults" Grid.Row="1">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Spell Id" Binding="{Binding Path=spellId}" IsReadOnly="True" Width="1*"/>
+                <DataGridTextColumn Header="Name" Binding="{Binding Path=name}" IsReadOnly="True" Width="1*"></DataGridTextColumn>
+                <!--<DataGridTextColumn Header="Level" Binding="{Binding Path=level}" IsReadOnly="True" Width="1*"></DataGridTextColumn>-->
+            </DataGrid.Columns>
+        </DataGrid>
+
+    </Grid>
+</Window>
