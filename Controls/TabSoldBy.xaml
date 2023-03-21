@@ -1,4 +1,4 @@
-﻿<TabItem x:Class="WeenieViewer.Controls.TabVendor"
+﻿<TabItem x:Class="WeenieViewer.Controls.TabSoldBy"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -6,18 +6,17 @@
              xmlns:local="clr-namespace:WeenieViewer.Controls"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
-         Header="Sells" x:Name="tabVendor"
+         Header="Sold by" x:Name="tabSoldBy"
          >
-    <DataGrid x:Name="vendorItems" AutoGenerateColumns="False" HorizontalGridLinesBrush="#FF767575" VerticalGridLinesBrush="#FF747474" CanUserAddRows="False" CanUserDeleteRows="False" CanUserReorderColumns="False" MinWidth="5" CanUserResizeRows="False" Grid.ColumnSpan="3">
+    <DataGrid x:Name="vendors" AutoGenerateColumns="False" HorizontalGridLinesBrush="#FF767575" VerticalGridLinesBrush="#FF747474" CanUserAddRows="False" CanUserDeleteRows="False" CanUserReorderColumns="False" MinWidth="5" CanUserResizeRows="False" Grid.ColumnSpan="2">
         <DataGrid.ContextMenu>
             <ContextMenu>
                 <MenuItem Header="View Weenie..." Click="View_OnClick" />
             </ContextMenu>
         </DataGrid.ContextMenu>
         <DataGrid.Columns>
-            <DataGridTextColumn Header="WCID" Binding="{Binding wcid}" IsReadOnly="True" Width="1*"/>
-            <DataGridTextColumn Header="Name" Binding="{Binding name}" IsReadOnly="True" Width="1*"/>
-            <DataGridTextColumn Header="Value" Binding="{Binding value}" IsReadOnly="True" Width="1*"/>
+            <DataGridTextColumn Header="WCID" Binding="{Binding ownerWcid}" IsReadOnly="True" Width="1*"/>
+            <DataGridTextColumn Header="Name" Binding="{Binding ownerName}" IsReadOnly="True" Width="1*"/>
         </DataGrid.Columns>
     </DataGrid>
 </TabItem>

@@ -88,6 +88,9 @@
     <Compile Include="Controls\DialogSpells.xaml.cs">
       <DependentUpon>DialogSpells.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\TabSoldBy.xaml.cs">
+      <DependentUpon>TabSoldBy.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\TabVendor.xaml.cs">
       <DependentUpon>TabVendor.xaml</DependentUpon>
     </Compile>
@@ -97,6 +100,10 @@
     <Page Include="Controls\DialogSpells.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\TabSoldBy.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Controls\TabVendor.xaml">
       <SubType>Designer</SubType>
@@ -116,6 +123,7 @@
     <Compile Include="Db\weenie\Attributes2nd.cs" />
     <Compile Include="Db\weenie\Book.cs" />
     <Compile Include="Db\weenie\BookPageData.cs" />
+    <Compile Include="Db\weenie\CreateListItem.cs" />
     <Compile Include="Db\weenie\Skill.cs" />
     <Compile Include="Db\weenie\SpellBook.cs" />
     <Compile Include="Enums\CreatureType.cs" />

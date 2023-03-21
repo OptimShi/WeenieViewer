@@ -7,7 +7,7 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
-        <TabControl>
+        <TabControl x:Name="WeenieTabControl">
             <TabItem Header="Item" x:Name="tabItem">
                 <Grid Background="#FFE5E5E5">
                     <RichTextBox x:Name="txtInfo" Grid.ColumnSpan="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True">

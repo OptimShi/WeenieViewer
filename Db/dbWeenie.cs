@@ -34,6 +34,7 @@ namespace WeenieViewer.Db
         public string AppraisalText;
 
         public List<CreateListItem> CreateList;
+        public List<CreateListItem> SoldBy;
 
         public bool IsCreature()
         {

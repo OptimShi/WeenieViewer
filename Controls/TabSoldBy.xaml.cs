@@ -19,29 +19,27 @@ namespace WeenieViewer.Controls
     /// <summary>
     /// Interaction logic for TabVendor.xaml
     /// </summary>
-    public partial class TabVendor : TabItem
+    public partial class TabSoldBy : TabItem
     {
-        public TabVendor(List<CreateListItem> Items, int filter = 0)
+        public TabSoldBy(List<CreateListItem> Items, int filter = 0)
         {
             InitializeComponent();
 
-            if (filter == 0)
-                vendorItems.ItemsSource = Items;
+            if(filter == 0)
+                vendors.ItemsSource = Items;
             else
-                vendorItems.ItemsSource = Items.Where(x => x.destinationType == filter).ToList();
-
-            Header = "Sells " + vendorItems.Items.Count + " Items";
+                vendors.ItemsSource = Items.Where(x => x.destinationType == filter).ToList();
+            Header = "Sold by " + vendors.Items.Count + " Shops";
         }
 
         private void View_OnClick(object sender, RoutedEventArgs e)
         {
-            var selectedItem = vendorItems.SelectedItem as CreateListItem;
-            if (selectedItem != null)
+            var selectedItem = vendors.SelectedItem as CreateListItem;
+            if(selectedItem != null)
             {
                 var main = Window.GetWindow(App.Current.MainWindow) as MainWindow;
-                main.ViewWeenie(selectedItem.wcid);
+                main.ViewWeenie(selectedItem.objectId);
             }
         }
-
     }
 }

@@ -14,6 +14,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using WeenieViewer.Appraisal;
+using WeenieViewer.Controls;
 using WeenieViewer.Db;
 using WeenieViewer.Enums;
 
@@ -238,6 +239,20 @@ namespace WeenieViewer
                 item.propertyType = e.Key.ToString() + " (" + (int)e.Key + ")";
                 item.propertyValue = e.Value.ToString();
                 dgProps.Items.Add(item);
+            }
+
+            var vendorItems = Weenie.CreateList.Where(x => x.destinationType == 4).ToList();
+            if(vendorItems.Count > 0)
+            {
+                var vendorTab = new TabVendor(Weenie.CreateList, 4);
+                WeenieTabControl.Items.Add(vendorTab);
+            }
+
+            var soldItems = Weenie.SoldBy.Where(x => x.destinationType == 4).ToList();
+            if (soldItems.Count > 0)
+            {
+                var soldTab = new TabSoldBy(Weenie.SoldBy, 4);
+                WeenieTabControl.Items.Add(soldTab);
             }
 
             //tabProps.IsSelected = true;
