@@ -493,6 +493,55 @@ namespace WeenieViewer.Db
             return results;
         }
 
+        private List<CreateListItem> _GetCreateList(int wcid)
+        {
+            var results = new List<CreateListItem>();
+            var command = sqlite.CreateCommand();
+            command.CommandText = $"SELECT * FROM `weenie_properties_create_list` WHERE `object_Id` = @wcid";
+            command.Parameters.Add(new SQLiteParameter("@wcid", wcid));
+
+            using (var reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    Attributes att = new Attributes();
+                    att.type = reader.GetInt32(reader.GetOrdinal("type"));
+                    att.level_from_cp = reader.GetInt32(reader.GetOrdinal("level_From_C_P"));
+                    att.cp_spent = reader.GetInt32(reader.GetOrdinal("c_P_Spent"));
+                    att.init_level = reader.GetInt32(reader.GetOrdinal("init_Level"));
+                    results.Add(att.type, att);
+                }
+            }
+            return results;
+        }
+
+        /// <summary>
+        /// Returns a list of objects that have the specificied item in their create list
+        /// </summary>
+        /// <param name="wcid"></param>
+        /// <returns></returns>
+        private List<CreateListItem> _GetItemInCreateList(int wcid)
+        {
+            var results = new List<CreateListItem>();
+            var command = sqlite.CreateCommand();
+            command.CommandText = $"SELECT * FROM `weenie_properties_create_list` WHERE `object_Id` = @wcid";
+            command.Parameters.Add(new SQLiteParameter("@wcid", wcid));
+
+            using (var reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    Attributes att = new Attributes();
+                    att.type = reader.GetInt32(reader.GetOrdinal("type"));
+                    att.level_from_cp = reader.GetInt32(reader.GetOrdinal("level_From_C_P"));
+                    att.cp_spent = reader.GetInt32(reader.GetOrdinal("c_P_Spent"));
+                    att.init_level = reader.GetInt32(reader.GetOrdinal("init_Level"));
+                    results.Add(att.type, att);
+                }
+            }
+            return results;
+        }
+
 
     }
 }

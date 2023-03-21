@@ -88,10 +88,17 @@
     <Compile Include="Controls\DialogSpells.xaml.cs">
       <DependentUpon>DialogSpells.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\TabVendor.xaml.cs">
+      <DependentUpon>TabVendor.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\TabWeenie.xaml.cs">
       <DependentUpon>TabWeenie.xaml</DependentUpon>
     </Compile>
     <Page Include="Controls\DialogSpells.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\TabVendor.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -33,6 +33,8 @@ namespace WeenieViewer.Db
         public string WeenieClass;
         public string AppraisalText;
 
+        public List<CreateListItem> CreateList;
+
         public bool IsCreature()
         {
             if (Bools.ContainsKey(PropertyBool.NPC_LOOKS_LIKE_OBJECT_BOOL) && Bools[PropertyBool.NPC_LOOKS_LIKE_OBJECT_BOOL] == true)
