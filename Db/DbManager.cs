@@ -192,6 +192,9 @@ namespace WeenieViewer.Db
                 //weenie.Skills[s.Key] = s.Value;
             }
 
+            weenie.CreateList = _GetCreateList(wcid);
+            weenie.SoldBy = _GetItemInCreateList(wcid);
+
             return weenie;
         }
 
@@ -490,6 +493,89 @@ namespace WeenieViewer.Db
                 }
             }
 
+            return results;
+        }
+
+        private List<CreateListItem> _GetCreateList(int wcid)
+        {
+            var results = new List<CreateListItem>();
+            var command = sqlite.CreateCommand();
+            //command.CommandText = $"SELECT * FROM `weenie_properties_create_list` WHERE `object_Id` = @wcid";
+            command.CommandText = "SELECT cl.weenie_Class_Id as wcid, s.value as name, i.value as value, cl.* FROM `weenie_properties_create_list` as cl " +
+                "left join `weenie_properties_string` as s on s.object_Id = cl.weenie_Class_Id and s.type = 1 " + 
+                "left join `weenie_properties_int` as i on i.object_Id = cl.weenie_Class_Id and i.type = 19 " + 
+                "WHERE cl.`object_Id` = @wcid";
+            command.Parameters.Add(new SQLiteParameter("@wcid", wcid));
+
+            using (var reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    CreateListItem cl = new CreateListItem();
+                    cl.objectId = reader.GetInt32(reader.GetOrdinal("object_Id"));
+                    cl.destinationType = reader.GetInt32(reader.GetOrdinal("destination_Type"));
+                    cl.wcid = reader.GetInt32(reader.GetOrdinal("weenie_Class_Id"));
+                    cl.stackSize = reader.GetInt32(reader.GetOrdinal("stack_Size"));
+                    cl.palette = reader.GetInt32(reader.GetOrdinal("palette"));
+                    cl.shade = reader.GetFloat(reader.GetOrdinal("shade"));
+                    
+                    var tempBond = reader.GetInt32(reader.GetOrdinal("try_To_Bond"));
+                    cl.tryToBond = tempBond == 1;
+
+                    if (!reader.IsDBNull(reader.GetOrdinal("name")))
+                        cl.name = reader.GetString(reader.GetOrdinal("name"));
+                    else
+                        cl.name = "(Missing Item)";
+
+                    if (!reader.IsDBNull(reader.GetOrdinal("value")))
+                        cl.value = reader.GetInt32(reader.GetOrdinal("value"));
+                    else
+                        cl.value = 0;
+                    
+                    results.Add(cl);
+                }
+            }
+            return results;
+        }
+
+        /// <summary>
+        /// Returns a list of objects that have the specificied item in their create list
+        /// </summary>
+        /// <param name="wcid"></param>
+        /// <returns></returns>
+        private List<CreateListItem> _GetItemInCreateList(int wcid)
+        {
+            var results = new List<CreateListItem>();
+            var command = sqlite.CreateCommand();
+            command.CommandText = "SELECT cl.weenie_Class_Id as wcid, s.value as name, cl.* " +
+                                "FROM `weenie_properties_string` as s, `weenie_properties_create_list` as cl " +
+                                "WHERE cl.`weenie_Class_Id` = @wcid and s.type = 1 and s.object_Id = cl.object_Id";
+            command.Parameters.Add(new SQLiteParameter("@wcid", wcid));
+
+            using (var reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    CreateListItem cl = new CreateListItem();
+                    cl.objectId = reader.GetInt32(reader.GetOrdinal("object_Id"));
+                    cl.destinationType = reader.GetInt32(reader.GetOrdinal("destination_Type"));
+                    cl.wcid = reader.GetInt32(reader.GetOrdinal("weenie_Class_Id"));
+                    cl.stackSize = reader.GetInt32(reader.GetOrdinal("stack_Size"));
+                    cl.palette = reader.GetInt32(reader.GetOrdinal("palette"));
+                    cl.shade = reader.GetFloat(reader.GetOrdinal("shade"));
+
+                    var tempBond = reader.GetInt32(reader.GetOrdinal("try_To_Bond"));
+                    cl.tryToBond = tempBond == 1;
+
+                    cl.ownerWcid = cl.objectId;
+                    if (!reader.IsDBNull(reader.GetOrdinal("name")))
+                        cl.ownerName = reader.GetString(reader.GetOrdinal("name"));
+                    else
+                        cl.ownerName = "(Missing Item)";
+
+                    results.Add(cl);
+                }
+            }
             return results;
         }
 

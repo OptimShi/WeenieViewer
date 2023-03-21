@@ -15,6 +15,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using WeenieViewer.Controls;
 using WeenieViewer.Db;
+using WeenieViewer.Db.weenie;
 
 namespace WeenieViewer
 {
@@ -43,6 +44,20 @@ namespace WeenieViewer
             SetupHotKeys();
             // txtSearch.Text = "Asheron"; 
         }
+
+        private void View_OnClick(object sender, RoutedEventArgs e)
+        {
+            if (lstSearchResults.HasItems && lstSearchResults.SelectedItem != null)
+            {
+                string selectedItem = lstSearchResults.SelectedValue.ToString();
+
+                int wcidLength = selectedItem.LastIndexOf(')') - selectedItem.LastIndexOf('(') - 1;
+                var selectedWCID = selectedItem.Substring(selectedItem.LastIndexOf('(') + 1, wcidLength);
+
+                ViewWeenie(Int32.Parse(selectedWCID));
+            }
+        }
+  
 
         private void miExit_Click(object sender, RoutedEventArgs e)
         {
@@ -92,31 +107,36 @@ namespace WeenieViewer
                 int wcidLength = selectedItem.LastIndexOf(')') - selectedItem.LastIndexOf('(') - 1;
                 var selectedWCID = selectedItem.Substring(selectedItem.LastIndexOf('(')+1, wcidLength);
 
-                // Does this tab already exist?
-                var tabExists = tabGroup.Items.OfType<TabItem>().SingleOrDefault(n => n.Header.ToString() == selectedItem);
-                if (tabExists != null)
-                {
-                    // Bring the tab forward
-                    tabGroup.SelectedItem = tabExists;
-                }
-                else
-                {
-                    // Create our new tab.
-                    //var newTab = new TabWeenie() {};
-                    TabItem newWeenieTabItem = new TabItem
-                    {
-                        Header = selectedItem,
-                        Name = "tab_" + selectedWCID.ToString()
-                    };
-                    TabWeenie weenieTabContent = new TabWeenie();
-                    newWeenieTabItem.Content = weenieTabContent;
-                    var weenie = db.GetWeenie(Int32.Parse(selectedWCID));
-                    weenieTabContent.DisplayWeenie(weenie);
+                ViewWeenie(Int32.Parse(selectedWCID));
+            }
+        }
 
-                    tabGroup.Items.Add(newWeenieTabItem);
-                    tabGroup.SelectedItem = newWeenieTabItem;
-                }
+        public void ViewWeenie(int wcid)
+        {
+            // Does this tab already exist?
+            var tabExists = tabGroup.Items.OfType<TabItem>().SingleOrDefault(n => n.Name.ToString() == "tab_" + wcid.ToString());
+            if (tabExists != null)
+            {
+                // Bring the tab forward
+                tabGroup.SelectedItem = tabExists;
+            }
+            else
+            {
+                // Create our new tab.
+                //var newTab = new TabWeenie() {};
+                TabItem newWeenieTabItem = new TabItem
+                {
+                    //Header = itemName,
+                    Name = "tab_" + wcid.ToString()
+                };
+                TabWeenie weenieTabContent = new TabWeenie();
+                newWeenieTabItem.Content = weenieTabContent;
+                var weenie = db.GetWeenie(wcid);
+                weenieTabContent.DisplayWeenie(weenie);
 
+                newWeenieTabItem.Header = weenie.Strings[Enums.PropertyString.NAME_STRING] + $" ({wcid})";
+                tabGroup.Items.Add(newWeenieTabItem);
+                tabGroup.SelectedItem = newWeenieTabItem;
             }
         }
 

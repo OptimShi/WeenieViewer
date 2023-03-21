@@ -39,7 +39,13 @@
 
         <TabControl Grid.Row="2" x:Name="tabGroup" SelectionChanged="tabGroup_SelectionChanged">
             <TabItem Header="Search Results" x:Name="tabSearch">
-                <ListBox x:Name="lstSearchResults" MouseDoubleClick="lstSearchResults_MouseDoubleClick"/>
+                <ListBox x:Name="lstSearchResults" MouseDoubleClick="lstSearchResults_MouseDoubleClick">
+                    <ListBox.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="View Weenie..." Click="View_OnClick" />
+                        </ContextMenu>
+                    </ListBox.ContextMenu>
+                </ListBox>
             </TabItem>
         </TabControl>
         <StatusBar Grid.Row="3">
