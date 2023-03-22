@@ -134,7 +134,12 @@ namespace WeenieViewer
                 var weenie = db.GetWeenie(wcid);
                 weenieTabContent.DisplayWeenie(weenie);
 
-                newWeenieTabItem.Header = weenie.Strings[Enums.PropertyString.NAME_STRING] + $" ({wcid})";
+                // You can get a "missing item" via a CreateList, possibly other ways
+                if (!weenie.Strings.ContainsKey(Enums.PropertyString.NAME_STRING))
+                    newWeenieTabItem.Header = $"Missing Item ({wcid})";
+                else
+                    newWeenieTabItem.Header = weenie.Strings[Enums.PropertyString.NAME_STRING] + $" ({wcid})";
+                
                 tabGroup.Items.Add(newWeenieTabItem);
                 tabGroup.SelectedItem = newWeenieTabItem;
             }

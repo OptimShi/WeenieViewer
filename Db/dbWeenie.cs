@@ -35,6 +35,7 @@ namespace WeenieViewer.Db
 
         public List<CreateListItem> CreateList;
         public List<CreateListItem> SoldBy;
+        public List<Position> Positions;
 
         public bool IsCreature()
         {

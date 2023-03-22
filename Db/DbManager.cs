@@ -20,6 +20,7 @@ namespace WeenieViewer.Db
         SQLiteConnection sqlite;
         public string Version = "";
         public Dictionary<int, string> SpellNames;
+        public Dictionary<string, Position> PointsOfInterest;
 
         public void Connect()
         {
@@ -41,6 +42,7 @@ namespace WeenieViewer.Db
             GetVersion();
 
             LoadSpells();
+            LoadPointsOfInterest();
         }
 
         public void Disconnect()
@@ -133,6 +135,32 @@ namespace WeenieViewer.Db
             }
         }
 
+        public void LoadPointsOfInterest()
+        {
+            if (PointsOfInterest == null)
+            {
+                PointsOfInterest = new Dictionary<string, Position>();
+
+                var command = sqlite.CreateCommand();
+                command.CommandText = "SELECT poi.name, p.obj_Cell_Id, p.origin_X, p.origin_Y, p.origin_Z FROM `points_of_interest` as poi, `weenie_properties_position` as p where p.object_Id = poi.weenie_Class_Id and p.position_Type = 2 group by poi.weenie_Class_Id;";
+
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+
+                        string name = reader.GetString(reader.GetOrdinal("name"));
+                        var pos = new Position();
+                        pos.objCellId = reader.GetInt32(reader.GetOrdinal("obj_Cell_Id"));
+                        pos.x = reader.GetFloat(reader.GetOrdinal("origin_X"));
+                        pos.y = reader.GetFloat(reader.GetOrdinal("origin_Y"));
+                        pos.z = reader.GetFloat(reader.GetOrdinal("origin_Z"));
+                        PointsOfInterest.Add(name, pos);
+                    }
+                }
+            }
+        }
+
         public dbWeenie GetWeenie(int wcid)
         {
             var command = sqlite.CreateCommand();
@@ -194,6 +222,7 @@ namespace WeenieViewer.Db
 
             weenie.CreateList = _GetCreateList(wcid);
             weenie.SoldBy = _GetItemInCreateList(wcid);
+            weenie.Positions = _GetPositions(wcid);
 
             return weenie;
         }
@@ -443,6 +472,62 @@ namespace WeenieViewer.Db
                     skill.resistant_at_last_check = reader.GetInt32(reader.GetOrdinal("resistance_At_Last_Check"));
                     skill.last_used_time = reader.GetDouble(reader.GetOrdinal("last_Used_Time"));
                     results.Add(skill.type, skill);
+                }
+            }
+
+            return results;
+        }
+
+        private List<Position> _GetPositions(int wcid)
+        {
+            var results = new List<Position>();
+
+            // Lookup fixed positions
+            var command = sqlite.CreateCommand();
+            command.CommandText = $"SELECT * FROM `weenie_properties_position` WHERE `object_Id` = @wcid";
+            command.Parameters.Add(new SQLiteParameter("@wcid", wcid));
+
+            using (var reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    weenie.Position pos = new weenie.Position();
+                    pos.positionType = reader.GetInt32(reader.GetOrdinal("position_Type"));
+                    pos.objCellId = reader.GetInt32(reader.GetOrdinal("obj_Cell_Id"));
+
+                    pos.x = reader.GetFloat(reader.GetOrdinal("origin_X"));
+                    pos.y = reader.GetFloat(reader.GetOrdinal("origin_Y"));
+                    pos.z = reader.GetFloat(reader.GetOrdinal("origin_Z"));
+
+                    pos.qw = reader.GetFloat(reader.GetOrdinal("angles_W"));
+                    pos.qx = reader.GetFloat(reader.GetOrdinal("angles_X"));
+                    pos.qy = reader.GetFloat(reader.GetOrdinal("angles_Y"));
+                    pos.qz = reader.GetFloat(reader.GetOrdinal("angles_Z"));
+
+                    results.Add(pos);
+                }
+            }
+            command.CommandText = $"SELECT * FROM `landblock_instance` WHERE `weenie_Class_Id` = @wcid";
+            command.Parameters.Add(new SQLiteParameter("@wcid", wcid));
+
+            using (var reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    weenie.Position pos = new weenie.Position();
+                    pos.positionType = -1;
+                    pos.objCellId = reader.GetInt32(reader.GetOrdinal("obj_Cell_Id"));
+
+                    pos.x = reader.GetFloat(reader.GetOrdinal("origin_X"));
+                    pos.y = reader.GetFloat(reader.GetOrdinal("origin_Y"));
+                    pos.z = reader.GetFloat(reader.GetOrdinal("origin_Z"));
+
+                    pos.qw = reader.GetFloat(reader.GetOrdinal("angles_W"));
+                    pos.qx = reader.GetFloat(reader.GetOrdinal("angles_X"));
+                    pos.qy = reader.GetFloat(reader.GetOrdinal("angles_Y"));
+                    pos.qz = reader.GetFloat(reader.GetOrdinal("angles_Z"));
+
+                    results.Add(pos);
                 }
             }
 

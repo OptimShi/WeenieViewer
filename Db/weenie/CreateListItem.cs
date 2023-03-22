@@ -9,12 +9,12 @@ namespace WeenieViewer.Db.weenie
     public class CreateListItem
     {
         public int objectId { get; set; }
-        public int destinationType;
+        public int destinationType { get; set; }
         public int wcid { get; set; } // Needs the getter/setting to load in DataGrid
-        public int stackSize;
-        public int palette;
-        public float shade;
-        public bool tryToBond;
+        public int stackSize { get; set; }
+        public int palette { get; set; }
+        public float shade { get; set; }
+        public bool tryToBond { get; set; }
 
         // 
         public string name { get; set; }

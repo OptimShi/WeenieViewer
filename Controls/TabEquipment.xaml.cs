@@ -18,54 +18,54 @@ using WeenieViewer.Enums;
 namespace WeenieViewer.Controls
 {
     /// <summary>
-    /// Interaction logic for TabVendor.xaml
+    /// Interaction logic for TabEquipment.xaml
     /// </summary>
-    public partial class TabVendor : TabItem
+    public partial class TabEquipment : TabItem
     {
-        public TabVendor(List<CreateListItem> Items, int filter = 0)
+        public TabEquipment(List<CreateListItem> Items, int filter = 0)
         {
             InitializeComponent();
 
             List<CreateListItem> filteredItems;
-            if (filter == 0)
+            if(filter == 0)
                 filteredItems = Items;
             else
                 filteredItems = Items.Where(x => (x.destinationType & filter) > 0).ToList();
 
-            foreach (var filteredItem in filteredItems)
+            foreach(var filteredItem in filteredItems)
             {
-                var myItem = new soldItem();
-                myItem.wcid = filteredItem.wcid;
+                var myItem = new equippedItem();
                 myItem.name = filteredItem.name;
-                myItem.value = filteredItem.value;
-                myItem.shade = filteredItem.shade;
-
+                myItem.wcid = filteredItem.wcid;
+                myItem.shade = filteredItem.shade; 
+                myItem.stackSize = filteredItem.stackSize;
                 if (filteredItem.palette < 1 || filteredItem.palette > 93)
                     myItem.pal = "";
                 else
                     myItem.pal = ((PaletteTemplate)filteredItem.palette).ToString() + $" ({filteredItem.palette})";
 
-                vendorItems.Items.Add(myItem);
+                equippedItems.Items.Add(myItem);
             }
 
+            if (equippedItems.Items.Count > 1)
+                Header += "s";
 
-            Header = "Sells " + vendorItems.Items.Count + " Items";
+            Header += " (" + equippedItems.Items.Count.ToString() + ")";
         }
 
-        private class soldItem : CreateListItem
+        private class equippedItem: CreateListItem
         {
-            public string pal { get; set; }
+            public string pal { get; set;  }
         }
 
         private void View_OnClick(object sender, RoutedEventArgs e)
         {
-            var selectedItem = vendorItems.SelectedItem as soldItem;
-            if (selectedItem != null)
+            var selectedItem = equippedItems.SelectedItem as equippedItem;
+            if(selectedItem != null)
             {
                 var main = Window.GetWindow(App.Current.MainWindow) as MainWindow;
                 main.ViewWeenie(selectedItem.wcid);
             }
         }
-
     }
 }

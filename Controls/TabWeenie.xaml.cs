@@ -255,8 +255,28 @@ namespace WeenieViewer
                 WeenieTabControl.Items.Add(soldTab);
             }
 
+            var equippedItems = Weenie.CreateList.Where(x => (x.destinationType & 2) > 0).ToList();
+            if (equippedItems.Count > 0)
+            {
+                var equippedTab = new TabEquipment(Weenie.CreateList, 2);
+                WeenieTabControl.Items.Add(equippedTab);
+            }
+
+            var trophies = Weenie.CreateList.Where(x => (x.destinationType & 8) > 0).ToList();
+            if (trophies.Count > 0)
+            {
+                var trophyTab = new TabTrophies(Weenie.CreateList);
+                WeenieTabControl.Items.Add(trophyTab);
+            }
+
             //tabProps.IsSelected = true;
             tabItem.IsSelected = true;
+
+            if(Weenie.Positions.Count > 0)
+            {
+                var positionTab = new TabPosition(Weenie.Positions);
+                WeenieTabControl.Items.Add(positionTab);
+            }
         }
 
         private TableRowGroup AddSkillsToTable(Dictionary<int, WeenieViewer.Db.weenie.Skill> weenieSkills, string title, Color bgColor)

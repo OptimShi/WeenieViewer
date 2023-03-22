@@ -62,6 +62,9 @@
     <Reference Include="System.Data.SQLite.Linq, Version=1.0.117.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
       <HintPath>packages\System.Data.SQLite.Linq.1.0.117.0\lib\net46\System.Data.SQLite.Linq.dll</HintPath>
     </Reference>
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -88,6 +91,12 @@
     <Compile Include="Controls\DialogSpells.xaml.cs">
       <DependentUpon>DialogSpells.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\TabTrophies.xaml.cs">
+      <DependentUpon>TabTrophies.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\TabEquipment.xaml.cs">
+      <DependentUpon>TabEquipment.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\TabSoldBy.xaml.cs">
       <DependentUpon>TabSoldBy.xaml</DependentUpon>
     </Compile>
@@ -101,11 +110,27 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Controls\TabTrophies.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Controls\TabEquipment.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Controls\TabSoldBy.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Controls\TabVendor.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\TabPosition.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\template.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -117,17 +142,25 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Controls\TabPosition.xaml.cs">
+      <DependentUpon>TabPosition.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\template.xaml.cs">
+      <DependentUpon>template.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Db\DbManager.cs" />
     <Compile Include="Db\dbWeenie.cs" />
     <Compile Include="Db\weenie\Attributes.cs" />
     <Compile Include="Db\weenie\Attributes2nd.cs" />
     <Compile Include="Db\weenie\Book.cs" />
     <Compile Include="Db\weenie\BookPageData.cs" />
+    <Compile Include="Db\weenie\Position.cs" />
     <Compile Include="Db\weenie\CreateListItem.cs" />
     <Compile Include="Db\weenie\Skill.cs" />
     <Compile Include="Db\weenie\SpellBook.cs" />
     <Compile Include="Enums\CreatureType.cs" />
     <Compile Include="Enums\DamageType.cs" />
+    <Compile Include="Enums\PaletteTemplate.cs" />
     <Compile Include="Enums\PropertyBool.cs" />
     <Compile Include="Enums\PropertyDID.cs" />
     <Compile Include="Enums\PropertyFloat.cs" />
