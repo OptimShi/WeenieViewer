@@ -17,28 +17,32 @@ using WeenieViewer.Db.weenie;
 namespace WeenieViewer.Controls
 {
     /// <summary>
-    /// Interaction logic for TabVendor.xaml
+    /// Interaction logic for TabEquipment.xaml
     /// </summary>
-    public partial class TabSoldBy : TabItem
+    public partial class TabEquipment : TabItem
     {
-        public TabSoldBy(List<CreateListItem> Items, int filter = 0)
+        public TabEquipment(List<CreateListItem> Items, int filter = 0)
         {
             InitializeComponent();
 
             if(filter == 0)
-                vendors.ItemsSource = Items;
+                equippedItems.ItemsSource = Items;
             else
-                vendors.ItemsSource = Items.Where(x => (x.destinationType & filter) > 0).ToList();
-            Header = "Sold by " + vendors.Items.Count + " Shops";
+                equippedItems.ItemsSource = Items.Where(x => (x.destinationType & filter) > 0).ToList();
+
+            if (equippedItems.Items.Count > 1)
+                Header += "s";
+
+            Header += " (" + equippedItems.Items.Count.ToString() + ")";
         }
 
         private void View_OnClick(object sender, RoutedEventArgs e)
         {
-            var selectedItem = vendors.SelectedItem as CreateListItem;
+            var selectedItem = equippedItems.SelectedItem as CreateListItem;
             if(selectedItem != null)
             {
                 var main = Window.GetWindow(App.Current.MainWindow) as MainWindow;
-                main.ViewWeenie(selectedItem.objectId);
+                main.ViewWeenie(selectedItem.wcid);
             }
         }
     }

@@ -88,6 +88,12 @@
     <Compile Include="Controls\DialogSpells.xaml.cs">
       <DependentUpon>DialogSpells.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\TabTrophies.xaml.cs">
+      <DependentUpon>TabTrophies.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\TabEquipment.xaml.cs">
+      <DependentUpon>TabEquipment.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\TabSoldBy.xaml.cs">
       <DependentUpon>TabSoldBy.xaml</DependentUpon>
     </Compile>
@@ -100,6 +106,14 @@
     <Page Include="Controls\DialogSpells.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\TabTrophies.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Controls\TabEquipment.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Controls\TabSoldBy.xaml">
       <Generator>MSBuild:Compile</Generator>

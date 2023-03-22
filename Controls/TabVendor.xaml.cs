@@ -28,7 +28,7 @@ namespace WeenieViewer.Controls
             if (filter == 0)
                 vendorItems.ItemsSource = Items;
             else
-                vendorItems.ItemsSource = Items.Where(x => x.destinationType == filter).ToList();
+                vendorItems.ItemsSource = Items.Where(x => (x.destinationType & filter) > 0).ToList();
 
             Header = "Sells " + vendorItems.Items.Count + " Items";
         }
