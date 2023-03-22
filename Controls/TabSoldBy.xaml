@@ -15,8 +15,10 @@
             </ContextMenu>
         </DataGrid.ContextMenu>
         <DataGrid.Columns>
-            <DataGridTextColumn Header="WCID" Binding="{Binding ownerWcid}" IsReadOnly="True" Width="1*"/>
+            <DataGridTextColumn Header="WCID" Binding="{Binding ownerWcid}" IsReadOnly="True" Width="60"/>
             <DataGridTextColumn Header="Name" Binding="{Binding ownerName}" IsReadOnly="True" Width="1*"/>
+            <DataGridTextColumn Header="Color" Binding="{Binding pal}" IsReadOnly="True" Width="150"/>
+            <DataGridTextColumn Header="Shade" Binding="{Binding shade}" IsReadOnly="True" Width="60"/>
         </DataGrid.Columns>
     </DataGrid>
 </TabItem>

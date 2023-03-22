@@ -15,9 +15,9 @@
             </ContextMenu>
         </DataGrid.ContextMenu>
         <DataGrid.Columns>
-            <DataGridTextColumn Header="WCID" Binding="{Binding wcid}" IsReadOnly="True" Width="1*"/>
+            <DataGridTextColumn Header="WCID" Binding="{Binding wcid}" IsReadOnly="True" Width="60"/>
             <DataGridTextColumn Header="Name" Binding="{Binding name}" IsReadOnly="True" Width="1*"/>
-            <DataGridTextColumn Header="% Chance" Binding="{Binding probability}" IsReadOnly="True" Width="1*"/>
+            <DataGridTextColumn Header="% Chance" Binding="{Binding probability}" IsReadOnly="True" Width="80"/>
         </DataGrid.Columns>
     </DataGrid>
 </TabItem>

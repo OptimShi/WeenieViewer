@@ -271,6 +271,12 @@ namespace WeenieViewer
 
             //tabProps.IsSelected = true;
             tabItem.IsSelected = true;
+
+            if(Weenie.Positions.Count > 0)
+            {
+                var positionTab = new TabPosition(Weenie.Positions);
+                WeenieTabControl.Items.Add(positionTab);
+            }
         }
 
         private TableRowGroup AddSkillsToTable(Dictionary<int, WeenieViewer.Db.weenie.Skill> weenieSkills, string title, Color bgColor)

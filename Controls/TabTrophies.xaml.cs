@@ -52,7 +52,7 @@ namespace WeenieViewer.Controls
 
         private void View_OnClick(object sender, RoutedEventArgs e)
         {
-            var selectedItem = trophies.SelectedItem as CreateListItem;
+            var selectedItem = trophies.SelectedItem as trophyDataItem;
             if(selectedItem != null)
             {
                 var main = Window.GetWindow(App.Current.MainWindow) as MainWindow;

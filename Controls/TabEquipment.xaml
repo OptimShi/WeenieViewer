@@ -8,16 +8,17 @@
              d:DesignHeight="450" d:DesignWidth="800"
          Header="Equipped Item" x:Name="tabEquipment"
          >
-    <DataGrid x:Name="equippedItems" AutoGenerateColumns="False" HorizontalGridLinesBrush="#FF767575" VerticalGridLinesBrush="#FF747474" CanUserAddRows="False" CanUserDeleteRows="False" CanUserReorderColumns="False" MinWidth="5" CanUserResizeRows="False" Grid.ColumnSpan="3">
+    <DataGrid x:Name="equippedItems" AutoGenerateColumns="False" HorizontalGridLinesBrush="#FF767575" VerticalGridLinesBrush="#FF747474" CanUserAddRows="False" CanUserDeleteRows="False" CanUserReorderColumns="False" MinWidth="5" CanUserResizeRows="False" Grid.ColumnSpan="4">
         <DataGrid.ContextMenu>
             <ContextMenu>
                 <MenuItem Header="View Weenie..." Click="View_OnClick" />
             </ContextMenu>
         </DataGrid.ContextMenu>
         <DataGrid.Columns>
-            <DataGridTextColumn Header="WCID" Binding="{Binding wcid}" IsReadOnly="True" Width="1*"/>
+            <DataGridTextColumn Header="WCID" Binding="{Binding wcid}" IsReadOnly="True" Width="60"/>
             <DataGridTextColumn Header="Name" Binding="{Binding name}" IsReadOnly="True" Width="1*"/>
-            <DataGridTextColumn Header="Qty" Binding="{Binding stackSize}" IsReadOnly="True" Width="1*"/>
+            <DataGridTextColumn Header="Color" Binding="{Binding pal}" IsReadOnly="True" Width="150"/>
+            <DataGridTextColumn Header="Shade" Binding="{Binding shade}" IsReadOnly="True" Width="60"/>
         </DataGrid.Columns>
     </DataGrid>
 </TabItem>
