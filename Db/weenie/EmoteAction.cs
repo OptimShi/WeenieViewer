@@ -8,8 +8,8 @@ namespace WeenieViewer.Db.weenie
 {
     public class EmoteAction
     {
-        public uint Id { get; set; }
-        public uint EmoteId { get; set; }
+        public int Id { get; set; }
+        public int EmoteId { get; set; }
         public uint Order { get; set; }
         public uint Type { get; set; }
         public float Delay { get; set; }
@@ -50,6 +50,6 @@ namespace WeenieViewer.Db.weenie
         public float? AnglesY { get; set; }
         public float? AnglesZ { get; set; }
 
-        public virtual Emote Emote { get; set; }
+        // public virtual Emote Emote { get; set; }
     }
 }

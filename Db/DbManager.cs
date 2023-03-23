@@ -21,6 +21,7 @@ namespace WeenieViewer.Db
         public string Version = "";
         public Dictionary<int, string> SpellNames;
         public Dictionary<string, Position> PointsOfInterest;
+        public Dictionary<int, string> WeenieNames;
 
         public void Connect()
         {
@@ -41,6 +42,7 @@ namespace WeenieViewer.Db
 
             GetVersion();
 
+            LoadWeenieNames();
             LoadSpells();
             LoadPointsOfInterest();
         }
@@ -113,6 +115,26 @@ namespace WeenieViewer.Db
                 }
             }
             return results;
+        }
+
+        public void LoadWeenieNames()
+        {
+            if (WeenieNames == null)
+            {
+                WeenieNames = new Dictionary<int, string>();
+
+                var command = sqlite.CreateCommand();
+                command.CommandText = $"SELECT object_Id, value FROM `weenie_properties_string` where `type` = 1 order by object_Id;";
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        int wcid = reader.GetInt32(reader.GetOrdinal("object_Id"));
+                        string name = reader.GetString(reader.GetOrdinal("value"));
+                        WeenieNames.Add(wcid, name);
+                    }
+                }
+            }
         }
 
         public void LoadSpells()
@@ -223,7 +245,8 @@ namespace WeenieViewer.Db
             weenie.CreateList = _GetCreateList(wcid);
             weenie.SoldBy = _GetItemInCreateList(wcid);
             weenie.Positions = _GetPositions(wcid);
-            
+
+            //weenie.Emotes = new List<Emote>();
             weenie.Emotes = _GetEmotes(wcid);
 
             return weenie;
@@ -668,11 +691,12 @@ namespace WeenieViewer.Db
 
         private List<Emote> _GetEmotes(int wcid)
         {
-            var results = new List<Emote>();
+            var results = new Dictionary<int, Emote>();
             var command = sqlite.CreateCommand();
             command.CommandText = $"SELECT * FROM `weenie_properties_emote` WHERE `object_Id` = @wcid";
             command.Parameters.Add(new SQLiteParameter("@wcid", wcid));
 
+            List<int> emoteIds = new List<int>();
             using (var reader = command.ExecuteReader())
             {
                 while (reader.Read())
@@ -697,30 +721,48 @@ namespace WeenieViewer.Db
                     if (!reader.IsDBNull(reader.GetOrdinal("max_Health")))
                         emote.MaxHealth = reader.GetFloat(reader.GetOrdinal("max_Health"));
 
-                    emote.EmoteAction = _GetEmoteActions(emoteId);
+                    emoteIds.Add(emoteId);
+                   // emote.EmoteAction = _GetEmoteActions(emoteId);
 
-                    results.Add(emote);
+                    results.Add(emoteId, emote);
                 }
             }
 
-            return results;
+            var EmoteActions = _GetEmoteActions(emoteIds);
+            foreach(var emoteAction in EmoteActions)
+            {
+                results[emoteAction.Key].EmoteAction = emoteAction.Value;
+            }
+            return results.Values.ToList();
         }
 
-        private List<EmoteAction> _GetEmoteActions(int emoteId)
+        /// <summary>
+        /// Much faster to do one in "IN" query for all emotes for this Weenie, then one query for each emoteId on its own...
+        /// </summary>
+        /// <param name="EmoteIds"></param>
+        /// <returns></returns>
+        private Dictionary<int, List<EmoteAction>> _GetEmoteActions(List<int> EmoteIds)
         {
-            var results = new List<EmoteAction>();
+            var results = new Dictionary<int, List<EmoteAction>>();
             var command = sqlite.CreateCommand();
-            command.CommandText = $"SELECT * FROM `weenie_properties_emote_action` WHERE `emote_Id` = @emoteId order by `order`";
-            command.Parameters.Add(new SQLiteParameter("@emoteId", emoteId));
 
-            //OPTIMISE!
+            string inClause = "";
+            for(var i = 0; i< EmoteIds.Count; i++)
+            {
+                inClause += EmoteIds[i].ToString() + ",";
+            }
+            inClause = inClause.TrimEnd(new Char[] { ',' });
+
+            command.CommandText = $"SELECT * FROM `weenie_properties_emote_action` WHERE `emote_Id` in ({inClause}) order by `order`";
+            //command.Parameters.Add(new SQLiteParameter("@inClause", inClause));
+
             using (var reader = command.ExecuteReader())
             {
                 while (reader.Read())
                 {
                     EmoteAction action = new EmoteAction();
-                    action.Id = (uint)reader.GetInt32(reader.GetOrdinal("id"));
-                    action.EmoteId = (uint)reader.GetInt32(reader.GetOrdinal("emote_Id"));
+                    action.Id = reader.GetInt32(reader.GetOrdinal("id"));
+                    action.EmoteId = reader.GetInt32(reader.GetOrdinal("emote_Id"));
                     action.Order = (uint)reader.GetInt32(reader.GetOrdinal("order"));
                     action.Type = (uint)reader.GetInt32(reader.GetOrdinal("type"));
                     action.Delay = reader.GetFloat(reader.GetOrdinal("delay"));
@@ -776,26 +818,33 @@ namespace WeenieViewer.Db
                     if (!reader.IsDBNull(reader.GetOrdinal("palette")))
                         action.Palette = reader.GetInt32(reader.GetOrdinal("palette"));
                     if (!reader.IsDBNull(reader.GetOrdinal("shade")))
-                        action.Shade = reader.GetInt32(reader.GetOrdinal("shade"));
+                        action.Shade = reader.GetFloat(reader.GetOrdinal("shade"));
                     if (!reader.IsDBNull(reader.GetOrdinal("try_To_Bond")))
                         action.TryToBond = reader.GetBoolean(reader.GetOrdinal("try_To_Bond"));
                     if (!reader.IsDBNull(reader.GetOrdinal("obj_Cell_Id")))
                         action.ObjCellId = (uint)reader.GetInt32(reader.GetOrdinal("obj_Cell_Id"));
                     if (!reader.IsDBNull(reader.GetOrdinal("origin_X")))
-                        action.OriginX = reader.GetInt32(reader.GetOrdinal("origin_X"));
+                        action.OriginX = reader.GetFloat(reader.GetOrdinal("origin_X"));
                     if (!reader.IsDBNull(reader.GetOrdinal("origin_Y")))
-                        action.OriginY = reader.GetInt32(reader.GetOrdinal("origin_Y"));
+                        action.OriginY = reader.GetFloat(reader.GetOrdinal("origin_Y"));
                     if (!reader.IsDBNull(reader.GetOrdinal("origin_Z")))
-                        action.OriginZ = reader.GetInt32(reader.GetOrdinal("origin_Z"));
+                        action.OriginZ = reader.GetFloat(reader.GetOrdinal("origin_Z"));
                     if (!reader.IsDBNull(reader.GetOrdinal("angles_W")))
-                        action.AnglesW = reader.GetInt32(reader.GetOrdinal("angles_W"));
+                        action.AnglesW = reader.GetFloat(reader.GetOrdinal("angles_W"));
                     if (!reader.IsDBNull(reader.GetOrdinal("angles_X")))
-                        action.AnglesX = reader.GetInt32(reader.GetOrdinal("angles_X"));
+                        action.AnglesX = reader.GetFloat(reader.GetOrdinal("angles_X"));
                     if (!reader.IsDBNull(reader.GetOrdinal("angles_Y")))
-                        action.AnglesY = reader.GetInt32(reader.GetOrdinal("angles_Y"));
+                        action.AnglesY = reader.GetFloat(reader.GetOrdinal("angles_Y"));
                     if (!reader.IsDBNull(reader.GetOrdinal("angles_Z")))
-                        action.AnglesZ = reader.GetInt32(reader.GetOrdinal("angles_Z"));
-                    results.Add(action);
+                        action.AnglesZ = reader.GetFloat(reader.GetOrdinal("angles_Z"));
+
+                    if (results.ContainsKey(action.EmoteId))
+                        results[action.EmoteId].Add(action);
+                    else
+                    {
+                        List<EmoteAction> actions = new List<EmoteAction> { action };
+                        results.Add(action.EmoteId, actions);
+                    }
                 }
             }
 

@@ -277,6 +277,12 @@ namespace WeenieViewer
                 var positionTab = new TabPosition(Weenie.Positions);
                 WeenieTabControl.Items.Add(positionTab);
             }
+
+            if(Weenie.Emotes.Count > 0)
+            {
+                var emotesTab = new TabEmotes(Weenie.Emotes);
+                WeenieTabControl.Items.Add(emotesTab);
+            }
         }
 
         private TableRowGroup AddSkillsToTable(Dictionary<int, WeenieViewer.Db.weenie.Skill> weenieSkills, string title, Color bgColor)

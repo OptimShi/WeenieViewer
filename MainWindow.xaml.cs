@@ -122,26 +122,34 @@ namespace WeenieViewer
             }
             else
             {
-                // Create our new tab.
-                //var newTab = new TabWeenie() {};
-                TabItem newWeenieTabItem = new TabItem
+                Cursor = Cursors.Wait;
+                try
                 {
-                    //Header = itemName,
-                    Name = "tab_" + wcid.ToString()
-                };
-                TabWeenie weenieTabContent = new TabWeenie();
-                newWeenieTabItem.Content = weenieTabContent;
-                var weenie = db.GetWeenie(wcid);
-                weenieTabContent.DisplayWeenie(weenie);
+                    // Create our new tab.
+                    //var newTab = new TabWeenie() {};
+                    TabItem newWeenieTabItem = new TabItem
+                    {
+                        //Header = itemName,
+                        Name = "tab_" + wcid.ToString()
+                    };
+                    TabWeenie weenieTabContent = new TabWeenie();
+                    newWeenieTabItem.Content = weenieTabContent;
+                    var weenie = db.GetWeenie(wcid);
+                    weenieTabContent.DisplayWeenie(weenie);
 
-                // You can get a "missing item" via a CreateList, possibly other ways
-                if (!weenie.Strings.ContainsKey(Enums.PropertyString.NAME_STRING))
-                    newWeenieTabItem.Header = $"Missing Item ({wcid})";
-                else
-                    newWeenieTabItem.Header = weenie.Strings[Enums.PropertyString.NAME_STRING] + $" ({wcid})";
-                
-                tabGroup.Items.Add(newWeenieTabItem);
-                tabGroup.SelectedItem = newWeenieTabItem;
+                    // You can get a "missing item" via a CreateList, possibly other ways
+                    if (!weenie.Strings.ContainsKey(Enums.PropertyString.NAME_STRING))
+                        newWeenieTabItem.Header = $"Missing Item ({wcid})";
+                    else
+                        newWeenieTabItem.Header = weenie.Strings[Enums.PropertyString.NAME_STRING] + $" ({wcid})";
+
+                    tabGroup.Items.Add(newWeenieTabItem);
+                    tabGroup.SelectedItem = newWeenieTabItem;
+                }
+                finally
+                {
+                    Cursor = Cursors.Arrow;
+                }
             }
         }
 

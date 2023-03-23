@@ -10,7 +10,7 @@ namespace WeenieViewer.Db.weenie
     {
         public Emote()
         {
-            EmoteAction = new HashSet<EmoteAction>();
+            EmoteAction = new List<EmoteAction>();
         }
 
         public int Id { get; set; }
@@ -25,6 +25,6 @@ namespace WeenieViewer.Db.weenie
         public float? MinHealth { get; set; }
         public float? MaxHealth { get; set; }
 
-        public virtual ICollection<EmoteAction> EmoteAction { get; set; }
+        public List<EmoteAction> EmoteAction { get; set; }
     }
 }
