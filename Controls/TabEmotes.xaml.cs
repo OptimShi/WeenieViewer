@@ -8,6 +8,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
+using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -26,10 +27,15 @@ namespace WeenieViewer.Controls
         public TabEmotes(List<Emote> Emotes)
         {
             InitializeComponent();
+            myText.Text = "";
 
+            // EmoteScript only works for converting SQL to ES (or JSON), so we need to create our SQL first.
+            // Thanks to ACE, once again, for this stub of a class (other unneeded parts were stripped out)
             WeenieSQLWriter writer = new WeenieSQLWriter();
             var main = Window.GetWindow(App.Current.MainWindow) as MainWindow;
             writer.WeenieNames = main.db.WeenieNames;
+            writer.SpellNames = main.db.SpellNames;
+
             using (var stream = new MemoryStream())
             {
                 using (var sw = new StreamWriter(stream))
@@ -39,18 +45,12 @@ namespace WeenieViewer.Controls
 
                 byte[] buff = stream.ToArray();
                 string sql = Encoding.UTF8.GetString(buff, 0, buff.Length);
-                //myText.Text = sql;
-                //EmoteScriptLib.C
-                //EmoteScriptLib.Converter.sql2es(sql);
                 string[] lines = sql.Split(Environment.NewLine);
 
                 var es = EmoteScriptLib.Converter.sql2es(lines);
 
-                myText.Text = "";
                 foreach (var line in es )
-                {
                     myText.Text += line + "\n";
-                }
 
             }
             Header = "Emotes (" + Emotes.Count.ToString() + ")";

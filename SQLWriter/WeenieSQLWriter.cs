@@ -1,4 +1,5 @@
-﻿using System;
+﻿using EmoteScriptLib.Entity.Enum;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Globalization;
@@ -9,13 +10,14 @@ using System.Text;
 using System.Threading.Tasks;
 using WeenieViewer.Db.weenie;
 using WeenieViewer.Enums;
+using PropertyInt = EmoteScriptLib.Entity.Enum.PropertyInt;
 
 namespace WeenieViewer.SQLWriter
 {
     public class WeenieSQLWriter
     {
-        public Dictionary<int, string> WeenieNames;
-        //public IDictionary<uint, string> SpellNames;
+        public IDictionary<int, string> WeenieNames;
+        public IDictionary<int, string> SpellNames;
 
         /// <summary>
         /// If input is null, NULL will be returned.<para />
@@ -153,29 +155,154 @@ namespace WeenieViewer.SQLWriter
 
             var lineGenerator = new Func<int, string>(i =>
             {
-                string typeLabel = input[i].Type.ToString();
+                string typeLabel = Enum.GetName(typeof(EmoteType), input[i].Type);
+                if (typeLabel != null)
+                    typeLabel = $" /* {typeLabel} */";
 
                 string motionLabel = null;
+                if (input[i].Motion.HasValue)
+                {
+                    motionLabel = Enum.GetName(typeof(MotionCommand), input[i].Motion.Value);
+                    if (motionLabel != null)
+                        motionLabel = $" /* {motionLabel} */";
+                }
+
                 string spellIdLabel = null;
+                if (SpellNames != null && input[i].SpellId.HasValue)
+                {
+                    SpellNames.TryGetValue(input[i].SpellId.Value, out spellIdLabel);
+                    if (spellIdLabel != null)
+                        spellIdLabel = $" /* {spellIdLabel} */";
+                }
+
                 string pScriptLabel = null;
+                if (input[i].PScript.HasValue)
+                {
+                    pScriptLabel = Enum.GetName(typeof(PlayScript), input[i].PScript.Value);
+                    if (pScriptLabel != null)
+                        pScriptLabel = $" /* {pScriptLabel} */";
+                }
+
                 string soundLabel = null;
+                if (input[i].Sound.HasValue)
+                {
+                    soundLabel = Enum.GetName(typeof(Sound), input[i].Sound.Value);
+                    if (soundLabel != null)
+                        soundLabel = $" /* {soundLabel} */";
+                }
+
                 string weenieClassIdLabel = null;
+                if (input[i].WeenieClassId.HasValue && WeenieNames != null)
+                {
+                    WeenieNames.TryGetValue((int)input[i].WeenieClassId.Value, out weenieClassIdLabel);
+                    if (weenieClassIdLabel != null)
+                        weenieClassIdLabel = $" /* {weenieClassIdLabel} */";
+                }
+
                 string destinationTypeLabel = null;
+                if (input[i].DestinationType.HasValue)
+                {
+                    destinationTypeLabel = Enum.GetName(typeof(DestinationType), input[i].DestinationType.Value);
+                    if (destinationTypeLabel != null)
+                        destinationTypeLabel = $" /* {destinationTypeLabel} */";
+                }
+
                 string telelocLabel = null;
+                if (input[i].ObjCellId.HasValue && input[i].ObjCellId.Value > 0)
+                {
+                    telelocLabel = $" /* @teleloc 0x{input[i].ObjCellId.Value:X8} [{TrimNegativeZero(input[i].OriginX.Value):F6} {TrimNegativeZero(input[i].OriginY.Value):F6} {TrimNegativeZero(input[i].OriginZ.Value):F6}] {TrimNegativeZero(input[i].AnglesW.Value):F6} {TrimNegativeZero(input[i].AnglesX.Value):F6} {TrimNegativeZero(input[i].AnglesY.Value):F6} {TrimNegativeZero(input[i].AnglesZ.Value):F6} */";
+                }
+
                 string statLabel = null;
-                
+                if (input[i].Stat.HasValue)
+                {
+                    switch ((EmoteType)input[i].Type)
+                    {
+                        case EmoteType.AwardLevelProportionalSkillXP:
+                        case EmoteType.AwardSkillPoints:
+                        case EmoteType.AwardSkillXP:
+
+                        case EmoteType.InqSkillStat:
+                        case EmoteType.InqRawSkillStat:
+                        case EmoteType.InqSkillTrained:
+                        case EmoteType.InqSkillSpecialized:
+                        case EmoteType.UntrainSkill:
+                            statLabel = $" /* Skill.{(EmoteScriptLib.Entity.Enum.Skill)input[i].Stat.Value} */";
+                            break;
+
+                        case EmoteType.DecrementIntStat:
+                        case EmoteType.IncrementIntStat:
+                        case EmoteType.InqIntStat:
+                        case EmoteType.SetIntStat:
+                            statLabel = $" /* PropertyInt.{(PropertyInt)input[i].Stat.Value} */";
+                            break;
+
+                        case EmoteType.InqAttributeStat:
+                        case EmoteType.InqRawAttributeStat:
+                            statLabel = $" /* PropertyAttribute.{(PropertyAttribute)input[i].Stat.Value} */";
+                            break;
+
+                        case EmoteType.InqBoolStat:
+                        case EmoteType.SetBoolStat:
+                            statLabel = $" /* PropertyBool.{(EmoteScriptLib.Entity.Enum.PropertyBool)input[i].Stat.Value} */";
+                            break;
+
+                        case EmoteType.InqFloatStat:
+                        case EmoteType.SetFloatStat:
+                            statLabel = $" /* PropertyFloat.{(EmoteScriptLib.Entity.Enum.PropertyFloat)input[i].Stat.Value} */";
+                            break;
+
+                        case EmoteType.InqInt64Stat:
+                        case EmoteType.SetInt64Stat:
+                            statLabel = $" /* PropertyInt64.{(EmoteScriptLib.Entity.Enum.PropertyInt64)input[i].Stat.Value} */";
+                            break;
+
+                        case EmoteType.InqSecondaryAttributeStat:
+                        case EmoteType.InqRawSecondaryAttributeStat:
+                            statLabel = $" /* PropertyAttribute2nd.{(PropertyAttribute2nd)input[i].Stat.Value} */";
+                            break;
+
+                        case EmoteType.InqStringStat:
+                            statLabel = $" /* PropertyString.{(EmoteScriptLib.Entity.Enum.PropertyString)input[i].Stat.Value} */";
+                            break;
+
+                        default:
+                            break;
+                    }
+                }
 
                 string amountLabel = null;
-               
+                if (input[i].Amount.HasValue)
+                {
+                    switch ((EmoteType)input[i].Type)
+                    {
+                        case EmoteType.AddCharacterTitle:
+                            amountLabel = $" /* {(CharacterTitle)input[i].Amount.Value} */";
+                            break;
+
+                        case EmoteType.AddContract:
+                        case EmoteType.RemoveContract:
+                            amountLabel = $" /* {(ContractId)input[i].Amount.Value} */";
+                            break;
+
+                        default:
+                            break;
+                    }
+                }
 
                 string treasureClassLabel = null;
                
 
                 string treasureTypeLabel = null;
-               
+
 
                 string paletteLabel = null;
-              
+                if (input[i].Palette.HasValue)
+                {
+                    paletteLabel = Enum.GetName(typeof(PaletteTemplate), input[i].Palette.Value);
+                    if (paletteLabel != null)
+                        paletteLabel = $" /* {paletteLabel} */";
+                }
 
                 return
                     "@parent_id, " +

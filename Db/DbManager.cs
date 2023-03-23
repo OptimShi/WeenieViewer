@@ -785,8 +785,8 @@ namespace WeenieViewer.Db
                         action.MinDbl = reader.GetDouble(reader.GetOrdinal("min_Dbl"));
                     if (!reader.IsDBNull(reader.GetOrdinal("max_Dbl")))
                         action.MaxDbl = reader.GetDouble(reader.GetOrdinal("max_Dbl"));
-                    if (!reader.IsDBNull(reader.GetOrdinal("state")))
-                        action.Stat = reader.GetInt32(reader.GetOrdinal("state"));
+                    if (!reader.IsDBNull(reader.GetOrdinal("stat")))
+                        action.Stat = reader.GetInt32(reader.GetOrdinal("stat"));
                     if (!reader.IsDBNull(reader.GetOrdinal("display")))
                         action.Display = reader.GetBoolean(reader.GetOrdinal("display"));
                     if (!reader.IsDBNull(reader.GetOrdinal("amount")))
