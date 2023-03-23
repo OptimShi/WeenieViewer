@@ -713,6 +713,7 @@ namespace WeenieViewer.Db
             command.CommandText = $"SELECT * FROM `weenie_properties_emote_action` WHERE `emote_Id` = @emoteId order by `order`";
             command.Parameters.Add(new SQLiteParameter("@emoteId", emoteId));
 
+            //OPTIMISE!
             using (var reader = command.ExecuteReader())
             {
                 while (reader.Read())
