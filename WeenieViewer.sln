@@ -5,6 +5,8 @@ VisualStudioVersion = 17.4.33213.308
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WeenieViewer", "WeenieViewer.csproj", "{A9A07BC3-BD52-467C-BF62-EF2DBBF18455}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EmoteScriptLib", "EmoteScript\EmoteScriptLib\EmoteScriptLib.csproj", "{6A602858-AB5F-4ED9-94B7-CED27D72345C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{A9A07BC3-BD52-467C-BF62-EF2DBBF18455}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A9A07BC3-BD52-467C-BF62-EF2DBBF18455}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A9A07BC3-BD52-467C-BF62-EF2DBBF18455}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6A602858-AB5F-4ED9-94B7-CED27D72345C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6A602858-AB5F-4ED9-94B7-CED27D72345C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6A602858-AB5F-4ED9-94B7-CED27D72345C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6A602858-AB5F-4ED9-94B7-CED27D72345C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

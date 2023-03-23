@@ -91,6 +91,9 @@
     <Compile Include="Controls\DialogSpells.xaml.cs">
       <DependentUpon>DialogSpells.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\TabEmotes.xaml.cs">
+      <DependentUpon>TabEmotes.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\TabTrophies.xaml.cs">
       <DependentUpon>TabTrophies.xaml</DependentUpon>
     </Compile>
@@ -107,6 +110,10 @@
       <DependentUpon>TabWeenie.xaml</DependentUpon>
     </Compile>
     <Page Include="Controls\DialogSpells.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\TabEmotes.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -154,6 +161,8 @@
     <Compile Include="Db\weenie\Attributes2nd.cs" />
     <Compile Include="Db\weenie\Book.cs" />
     <Compile Include="Db\weenie\BookPageData.cs" />
+    <Compile Include="Db\weenie\Emote.cs" />
+    <Compile Include="Db\weenie\EmoteAction.cs" />
     <Compile Include="Db\weenie\Position.cs" />
     <Compile Include="Db\weenie\CreateListItem.cs" />
     <Compile Include="Db\weenie\Skill.cs" />
@@ -211,6 +220,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="WeenieViewer.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="SQLWriter\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
