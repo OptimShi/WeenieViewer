@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Ribbon;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
@@ -32,6 +34,7 @@ namespace WeenieViewer
             lblResultsCount.Text = "";
             lblVersion.Text = "";
             btnCloseTab.Visibility = Visibility.Hidden;
+            btnWiki.Visibility = Visibility.Hidden; 
 
             // Init our SQLite Database
             db = new DbManager();
@@ -132,16 +135,26 @@ namespace WeenieViewer
                         //Header = itemName,
                         Name = "tab_" + wcid.ToString()
                     };
+
                     TabWeenie weenieTabContent = new TabWeenie();
-                    newWeenieTabItem.Content = weenieTabContent;
+                    weenieTabContent.wcid = wcid;
+
                     var weenie = db.GetWeenie(wcid);
                     weenieTabContent.DisplayWeenie(weenie);
 
                     // You can get a "missing item" via a CreateList, possibly other ways
                     if (!weenie.Strings.ContainsKey(Enums.PropertyString.NAME_STRING))
+                    {
                         newWeenieTabItem.Header = $"Missing Item ({wcid})";
-                    else
+                    }
+                    else 
+                    {
                         newWeenieTabItem.Header = weenie.Strings[Enums.PropertyString.NAME_STRING] + $" ({wcid})";
+                        weenieTabContent.name = weenie.Strings[Enums.PropertyString.NAME_STRING];
+                    }
+
+                    newWeenieTabItem.Content = weenieTabContent;
+
 
                     tabGroup.Items.Add(newWeenieTabItem);
                     tabGroup.SelectedItem = newWeenieTabItem;
@@ -165,11 +178,13 @@ namespace WeenieViewer
             if(ti == null || ti.Name == "tabSearch")
             {
                 btnCloseTab.Visibility = Visibility.Collapsed;
+                btnWiki.Visibility = Visibility.Collapsed;
                 lblResultsCount.Visibility = Visibility.Visible;
             }
             else
             {
                 btnCloseTab.Visibility = Visibility.Visible;
+                btnWiki.Visibility = Visibility.Visible;
                 lblResultsCount.Visibility = Visibility.Collapsed;
             }
         }
@@ -216,6 +231,17 @@ namespace WeenieViewer
             var spellSearch = new DialogSpells();
             spellSearch.Owner = this;
             spellSearch.ShowDialog();
+        }
+
+        private void btnWiki_Click(object sender, RoutedEventArgs e)
+        {
+            TabItem ti = tabGroup.SelectedItem as TabItem;
+            TabWeenie content = ti.Content as TabWeenie;
+
+            string name = content.name;
+            string url = "https://asheron.fandom.com/wiki/Special:Search?query=" + Uri.EscapeDataString(name);
+            //string url = "http://www.acpedia.org/?search=" + Uri.EscapeDataString(name);
+            Process.Start(new ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });
         }
     }
 }

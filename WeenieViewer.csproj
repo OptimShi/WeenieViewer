@@ -20,6 +20,14 @@
     <Page Remove="EmoteScript\**" />
   </ItemGroup>
   <ItemGroup>
+    <None Remove="Graphics\wiki_icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Graphics\wiki_icon.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
     <Resource Include="Icon.png" />
   </ItemGroup>
   <ItemGroup>

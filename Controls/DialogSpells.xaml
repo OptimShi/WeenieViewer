@@ -7,7 +7,7 @@
         WindowStartupLocation="CenterScreen" 
         FocusManager.FocusedElement="{Binding ElementName=txtSpellName}"
         ShowInTaskbar="False"
-        Title="Search Spells..." Height="335" Width="271" >
+        Title="Search Spells..." Height="335" Width="271" WindowStyle="ToolWindow" >
     <Grid Margin="0,0,0,0">
         <Grid.RowDefinitions>
             <RowDefinition Height="125" />

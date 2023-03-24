@@ -25,8 +25,9 @@ namespace WeenieViewer
     /// </summary>
     public partial class TabWeenie : UserControl
     {
-
         private dbWeenie _Weenie;
+        public string name;
+        public int wcid;
 
         public TabWeenie()
         {
@@ -278,7 +279,13 @@ namespace WeenieViewer
                 WeenieTabControl.Items.Add(positionTab);
             }
 
-            if(Weenie.Emotes.Count > 0)
+            if (Weenie.BookData.Count > 0)
+            {
+                var pagesTab = new TabBook(Weenie.BookData);
+                WeenieTabControl.Items.Add(pagesTab);
+            }
+
+            if (Weenie.Emotes.Count > 0)
             {
                 var emotesTab = new TabEmotes(Weenie.Emotes);
                 WeenieTabControl.Items.Add(emotesTab);

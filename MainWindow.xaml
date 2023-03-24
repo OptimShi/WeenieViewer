@@ -31,7 +31,16 @@
         <Canvas Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Height="30">
             <Label Content="Search:" Canvas.Left="10" Canvas.Top="2" VerticalContentAlignment="Center" RenderTransformOrigin="1.567,0.367" HorizontalAlignment="Left" VerticalAlignment="Center"/>
             <TextBox x:Name="txtSearch" Text="" Canvas.Left="63" Canvas.Top="6" HorizontalAlignment="Left" Height="18" VerticalAlignment="Top" Width="137"/>
-            <Button x:Name="btnCloseTab" Content="X" Canvas.Right="10" Canvas.Top="7" FontFamily="Arial Black" ToolTip="Close Tab" BorderBrush="#06707070" Click="btnCloseTab_Click" />
+            <Button x:Name="btnCloseTab" Content="X" Canvas.Right="10" Canvas.Top="7" FontFamily="Arial Black" ToolTip="Close Tab" BorderBrush="Transparent" Click="btnCloseTab_Click" />
+
+            <Button x:Name="btnWiki" Canvas.Right="40" Width="100" Height="26" Canvas.Top="2" HorizontalAlignment="Center" VerticalAlignment="Top" Background="Transparent" BorderBrush="Transparent" Click="btnWiki_Click">
+                <StackPanel Orientation="Horizontal">
+                    <Image Source="Graphics/wiki_icon.png" Width="16" Height="16"/>
+                    <TextBlock Text="Search Wikia" />
+                </StackPanel>
+            </Button>
+
+
             <Canvas.Background>
                 <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.ControlLightColorKey}}"/>
             </Canvas.Background>
