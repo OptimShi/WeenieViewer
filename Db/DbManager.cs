@@ -21,6 +21,7 @@ namespace WeenieViewer.Db
         public string Version = "";
         public Dictionary<int, string> SpellNames;
         public Dictionary<string, Position> PointsOfInterest;
+        public Dictionary<int, string> WeenieNames;
 
         public void Connect()
         {
@@ -31,7 +32,10 @@ namespace WeenieViewer.Db
             if (!File.Exists(dbName))
             {
                 //throw new FileNotFoundException("Could Not Find 'ace_world.db'");
-                MessageBox.Show("Fatal Error:\nCould not locate database.\nThis application will now close.", "WeenieViewer", MessageBoxButton.OK, MessageBoxImage.Error);
+                string ErrorMsg = "Fatal Error: Could not locate database.\n\n" +
+                    "Please ensure ace_world.db is in your application folder.\n\n" +
+                    "This application will now close.";
+                MessageBox.Show(ErrorMsg, "WeenieViewer", MessageBoxButton.OK, MessageBoxImage.Error);
                 Application.Current.Shutdown();
                 return;
             }
@@ -41,6 +45,7 @@ namespace WeenieViewer.Db
 
             GetVersion();
 
+            LoadWeenieNames();
             LoadSpells();
             LoadPointsOfInterest();
         }
@@ -113,6 +118,26 @@ namespace WeenieViewer.Db
                 }
             }
             return results;
+        }
+
+        public void LoadWeenieNames()
+        {
+            if (WeenieNames == null)
+            {
+                WeenieNames = new Dictionary<int, string>();
+
+                var command = sqlite.CreateCommand();
+                command.CommandText = $"SELECT object_Id, value FROM `weenie_properties_string` where `type` = 1 order by object_Id;";
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        int wcid = reader.GetInt32(reader.GetOrdinal("object_Id"));
+                        string name = reader.GetString(reader.GetOrdinal("value"));
+                        WeenieNames.Add(wcid, name);
+                    }
+                }
+            }
         }
 
         public void LoadSpells()
@@ -223,6 +248,9 @@ namespace WeenieViewer.Db
             weenie.CreateList = _GetCreateList(wcid);
             weenie.SoldBy = _GetItemInCreateList(wcid);
             weenie.Positions = _GetPositions(wcid);
+
+            //weenie.Emotes = new List<Emote>();
+            weenie.Emotes = _GetEmotes(wcid);
 
             return weenie;
         }
@@ -661,6 +689,168 @@ namespace WeenieViewer.Db
                     results.Add(cl);
                 }
             }
+            return results;
+        }
+
+        private List<Emote> _GetEmotes(int wcid)
+        {
+            var results = new Dictionary<int, Emote>();
+            var command = sqlite.CreateCommand();
+            command.CommandText = $"SELECT * FROM `weenie_properties_emote` WHERE `object_Id` = @wcid";
+            command.Parameters.Add(new SQLiteParameter("@wcid", wcid));
+
+            List<int> emoteIds = new List<int>();
+            using (var reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    int emoteId = reader.GetInt32(reader.GetOrdinal("id"));
+                    weenie.Emote emote = new weenie.Emote();
+                    emote.ObjectId = reader.GetInt32(reader.GetOrdinal("object_Id"));
+                    emote.Category = reader.GetInt32(reader.GetOrdinal("category"));
+                    emote.Probability = reader.GetFloat(reader.GetOrdinal("probability"));
+                    if(!reader.IsDBNull(reader.GetOrdinal("weenie_Class_Id")))
+                        emote.WeenieClassId = reader.GetInt32(reader.GetOrdinal("weenie_Class_Id"));
+                    if (!reader.IsDBNull(reader.GetOrdinal("style")))
+                        emote.Style = reader.GetInt32(reader.GetOrdinal("style"));
+                    if (!reader.IsDBNull(reader.GetOrdinal("substyle")))
+                        emote.Substyle = reader.GetInt32(reader.GetOrdinal("substyle"));
+                    if (!reader.IsDBNull(reader.GetOrdinal("quest")))
+                        emote.Quest = reader.GetString(reader.GetOrdinal("quest"));
+                    if (!reader.IsDBNull(reader.GetOrdinal("vendor_Type")))
+                        emote.VendorType = reader.GetInt32(reader.GetOrdinal("vendor_Type"));
+                    if (!reader.IsDBNull(reader.GetOrdinal("min_Health")))
+                        emote.MinHealth = reader.GetFloat(reader.GetOrdinal("min_Health"));
+                    if (!reader.IsDBNull(reader.GetOrdinal("max_Health")))
+                        emote.MaxHealth = reader.GetFloat(reader.GetOrdinal("max_Health"));
+
+                    emoteIds.Add(emoteId);
+                   // emote.EmoteAction = _GetEmoteActions(emoteId);
+
+                    results.Add(emoteId, emote);
+                }
+            }
+
+            var EmoteActions = _GetEmoteActions(emoteIds);
+            foreach(var emoteAction in EmoteActions)
+            {
+                results[emoteAction.Key].EmoteAction = emoteAction.Value;
+            }
+            return results.Values.ToList();
+        }
+
+        /// <summary>
+        /// Much faster to do one in "IN" query for all emotes for this Weenie, then one query for each emoteId on its own...
+        /// </summary>
+        /// <param name="EmoteIds"></param>
+        /// <returns></returns>
+        private Dictionary<int, List<EmoteAction>> _GetEmoteActions(List<int> EmoteIds)
+        {
+            var results = new Dictionary<int, List<EmoteAction>>();
+            var command = sqlite.CreateCommand();
+
+            string inClause = "";
+            for(var i = 0; i< EmoteIds.Count; i++)
+            {
+                inClause += EmoteIds[i].ToString() + ",";
+            }
+            inClause = inClause.TrimEnd(new Char[] { ',' });
+
+            command.CommandText = $"SELECT * FROM `weenie_properties_emote_action` WHERE `emote_Id` in ({inClause}) order by `order`";
+            //command.Parameters.Add(new SQLiteParameter("@inClause", inClause));
+
+            using (var reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    EmoteAction action = new EmoteAction();
+                    action.Id = reader.GetInt32(reader.GetOrdinal("id"));
+                    action.EmoteId = reader.GetInt32(reader.GetOrdinal("emote_Id"));
+                    action.Order = (uint)reader.GetInt32(reader.GetOrdinal("order"));
+                    action.Type = (uint)reader.GetInt32(reader.GetOrdinal("type"));
+                    action.Delay = reader.GetFloat(reader.GetOrdinal("delay"));
+                    action.Extent = reader.GetFloat(reader.GetOrdinal("extent"));
+                    if (!reader.IsDBNull(reader.GetOrdinal("motion")))
+                        action.Motion = (uint)reader.GetInt32(reader.GetOrdinal("motion"));
+                    if (!reader.IsDBNull(reader.GetOrdinal("message")))
+                        action.Message = reader.GetString(reader.GetOrdinal("message"));
+                    if (!reader.IsDBNull(reader.GetOrdinal("test_String")))
+                        action.TestString = reader.GetString(reader.GetOrdinal("test_String"));
+                    if (!reader.IsDBNull(reader.GetOrdinal("min")))
+                        action.Min = reader.GetInt32(reader.GetOrdinal("min"));
+                    if (!reader.IsDBNull(reader.GetOrdinal("max")))
+                        action.Max = reader.GetInt32(reader.GetOrdinal("max"));
+                    if (!reader.IsDBNull(reader.GetOrdinal("min_64")))
+                        action.Min64 = reader.GetInt64(reader.GetOrdinal("min_64"));
+                    if (!reader.IsDBNull(reader.GetOrdinal("max_64")))
+                        action.Max64 = reader.GetInt64(reader.GetOrdinal("max_64"));
+                    if (!reader.IsDBNull(reader.GetOrdinal("min_Dbl")))
+                        action.MinDbl = reader.GetDouble(reader.GetOrdinal("min_Dbl"));
+                    if (!reader.IsDBNull(reader.GetOrdinal("max_Dbl")))
+                        action.MaxDbl = reader.GetDouble(reader.GetOrdinal("max_Dbl"));
+                    if (!reader.IsDBNull(reader.GetOrdinal("stat")))
+                        action.Stat = reader.GetInt32(reader.GetOrdinal("stat"));
+                    if (!reader.IsDBNull(reader.GetOrdinal("display")))
+                        action.Display = reader.GetBoolean(reader.GetOrdinal("display"));
+                    if (!reader.IsDBNull(reader.GetOrdinal("amount")))
+                        action.Amount = reader.GetInt32(reader.GetOrdinal("amount"));
+                    if (!reader.IsDBNull(reader.GetOrdinal("amount_64")))
+                        action.Amount64 = reader.GetInt64(reader.GetOrdinal("amount_64"));
+                    if (!reader.IsDBNull(reader.GetOrdinal("hero_X_P_64")))
+                        action.HeroXP64 = reader.GetInt64(reader.GetOrdinal("hero_X_P_64"));
+                    if (!reader.IsDBNull(reader.GetOrdinal("percent")))
+                        action.Percent = reader.GetDouble(reader.GetOrdinal("percent"));
+                    if (!reader.IsDBNull(reader.GetOrdinal("spell_Id")))
+                        action.SpellId = reader.GetInt32(reader.GetOrdinal("spell_Id"));
+                    if (!reader.IsDBNull(reader.GetOrdinal("wealth_Rating")))
+                        action.WealthRating = reader.GetInt32(reader.GetOrdinal("wealth_Rating"));
+                    if (!reader.IsDBNull(reader.GetOrdinal("treasure_Class")))
+                        action.TreasureClass = reader.GetInt32(reader.GetOrdinal("treasure_Class"));
+                    if (!reader.IsDBNull(reader.GetOrdinal("treasure_Type")))
+                        action.TreasureType = reader.GetInt32(reader.GetOrdinal("treasure_Type"));
+                    if (!reader.IsDBNull(reader.GetOrdinal("p_Script")))
+                        action.PScript = reader.GetInt32(reader.GetOrdinal("p_Script"));
+                    if (!reader.IsDBNull(reader.GetOrdinal("sound")))
+                        action.Sound = reader.GetInt32(reader.GetOrdinal("sound"));
+                    if (!reader.IsDBNull(reader.GetOrdinal("destination_Type")))
+                        action.DestinationType = reader.GetInt32(reader.GetOrdinal("destination_Type"));
+                    if (!reader.IsDBNull(reader.GetOrdinal("weenie_Class_Id")))
+                        action.WeenieClassId = (uint)reader.GetInt32(reader.GetOrdinal("weenie_Class_Id"));
+                    if (!reader.IsDBNull(reader.GetOrdinal("stack_Size")))
+                        action.StackSize = reader.GetInt32(reader.GetOrdinal("stack_Size"));
+                    if (!reader.IsDBNull(reader.GetOrdinal("palette")))
+                        action.Palette = reader.GetInt32(reader.GetOrdinal("palette"));
+                    if (!reader.IsDBNull(reader.GetOrdinal("shade")))
+                        action.Shade = reader.GetFloat(reader.GetOrdinal("shade"));
+                    if (!reader.IsDBNull(reader.GetOrdinal("try_To_Bond")))
+                        action.TryToBond = reader.GetBoolean(reader.GetOrdinal("try_To_Bond"));
+                    if (!reader.IsDBNull(reader.GetOrdinal("obj_Cell_Id")))
+                        action.ObjCellId = (uint)reader.GetInt32(reader.GetOrdinal("obj_Cell_Id"));
+                    if (!reader.IsDBNull(reader.GetOrdinal("origin_X")))
+                        action.OriginX = reader.GetFloat(reader.GetOrdinal("origin_X"));
+                    if (!reader.IsDBNull(reader.GetOrdinal("origin_Y")))
+                        action.OriginY = reader.GetFloat(reader.GetOrdinal("origin_Y"));
+                    if (!reader.IsDBNull(reader.GetOrdinal("origin_Z")))
+                        action.OriginZ = reader.GetFloat(reader.GetOrdinal("origin_Z"));
+                    if (!reader.IsDBNull(reader.GetOrdinal("angles_W")))
+                        action.AnglesW = reader.GetFloat(reader.GetOrdinal("angles_W"));
+                    if (!reader.IsDBNull(reader.GetOrdinal("angles_X")))
+                        action.AnglesX = reader.GetFloat(reader.GetOrdinal("angles_X"));
+                    if (!reader.IsDBNull(reader.GetOrdinal("angles_Y")))
+                        action.AnglesY = reader.GetFloat(reader.GetOrdinal("angles_Y"));
+                    if (!reader.IsDBNull(reader.GetOrdinal("angles_Z")))
+                        action.AnglesZ = reader.GetFloat(reader.GetOrdinal("angles_Z"));
+
+                    if (results.ContainsKey(action.EmoteId))
+                        results[action.EmoteId].Add(action);
+                    else
+                    {
+                        List<EmoteAction> actions = new List<EmoteAction> { action };
+                        results.Add(action.EmoteId, actions);
+                    }
+                }
+            }
+
             return results;
         }
 

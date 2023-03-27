@@ -37,6 +37,8 @@ namespace WeenieViewer.Db
         public List<CreateListItem> SoldBy;
         public List<Position> Positions;
 
+        public List<Emote> Emotes;
+
         public bool IsCreature()
         {
             if (Bools.ContainsKey(PropertyBool.NPC_LOOKS_LIKE_OBJECT_BOOL) && Bools[PropertyBool.NPC_LOOKS_LIKE_OBJECT_BOOL] == true)

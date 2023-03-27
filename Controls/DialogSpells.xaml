@@ -4,10 +4,10 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        WindowStartupLocation="CenterScreen" 
+        WindowStartupLocation="CenterOwner" 
         FocusManager.FocusedElement="{Binding ElementName=txtSpellName}"
         ShowInTaskbar="False"
-        Title="Search Spells..." Height="335" Width="271" >
+        Title="Search Spells..." Height="335" Width="271" WindowStyle="ToolWindow" >
     <Grid Margin="0,0,0,0">
         <Grid.RowDefinitions>
             <RowDefinition Height="125" />

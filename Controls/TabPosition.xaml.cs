@@ -52,7 +52,7 @@ namespace WeenieViewer.Controls
         {
             string theText = $"0x{p.objCellId:X8} {p.x} {p.y} {p.z} {p.qw} {p.qx} {p.qy} {p.qz}\n";
             var coords = PositionExtensions.GetMapCoordStr(p);
-            if ((p.objCellId & 0x100) > 0) coords += " (Indoors or in a Dungeon)";
+            if ((p.objCellId & 0x100) != 0) coords += " (Indoors or in a Dungeon)";
 
             theText += coords;
             if (includePOI)
