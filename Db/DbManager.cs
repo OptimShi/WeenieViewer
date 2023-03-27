@@ -32,7 +32,10 @@ namespace WeenieViewer.Db
             if (!File.Exists(dbName))
             {
                 //throw new FileNotFoundException("Could Not Find 'ace_world.db'");
-                MessageBox.Show("Fatal Error:\nCould not locate database.\nThis application will now close.", "WeenieViewer", MessageBoxButton.OK, MessageBoxImage.Error);
+                string ErrorMsg = "Fatal Error: Could not locate database.\n\n" +
+                    "Please ensure ace_world.db is in your application folder.\n\n" +
+                    "This application will now close.";
+                MessageBox.Show(ErrorMsg, "WeenieViewer", MessageBoxButton.OK, MessageBoxImage.Error);
                 Application.Current.Shutdown();
                 return;
             }

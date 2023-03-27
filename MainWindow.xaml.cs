@@ -213,7 +213,7 @@ namespace WeenieViewer
                 spellSearch.InputGestures.Add(new KeyGesture(Key.S, ModifierKeys.Control));
                 CommandBindings.Add(new CommandBinding(spellSearch, miSearchSpells_Click));
             }
-            catch (Exception Err) { }
+            catch { }
         }
 
         private void CloseTab(object sender, ExecutedRoutedEventArgs e)
@@ -242,6 +242,13 @@ namespace WeenieViewer
             string url = "https://asheron.fandom.com/wiki/Special:Search?query=" + Uri.EscapeDataString(name);
             //string url = "http://www.acpedia.org/?search=" + Uri.EscapeDataString(name);
             Process.Start(new ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });
+        }
+
+        private void miAbout_Click(object sender, RoutedEventArgs e)
+        {
+            var about = new DialogAbout();
+            about.Owner = this;
+            about.ShowDialog();
         }
     }
 }

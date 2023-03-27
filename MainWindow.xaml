@@ -24,9 +24,13 @@
                 <MenuItem x:Name="miExit" Header="Exit" Click="miExit_Click"/>
             </MenuItem>
             <MenuItem Header="Search">
-                <MenuItem x:Name="miSearchWeenies" Header="Weenies..." Click="miSearchWeenies_Click"/>
+                <MenuItem x:Name="miSearchWeenies" Header="Weenies" Click="miSearchWeenies_Click"/>
                 <MenuItem x:Name="miSearchSpells" Header="Spells..." Click="miSearchSpells_Click" InputGestureText="Ctrl+S" />
             </MenuItem>
+            <MenuItem Header="Help">
+                <MenuItem x:Name="miAbout" Header="About..." Click="miAbout_Click" />
+            </MenuItem>
+
         </Menu>
         <Canvas Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Height="30">
             <Label Content="Search:" Canvas.Left="10" Canvas.Top="2" VerticalContentAlignment="Center" RenderTransformOrigin="1.567,0.367" HorizontalAlignment="Left" VerticalAlignment="Center"/>
