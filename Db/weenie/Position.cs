@@ -11,7 +11,7 @@ namespace WeenieViewer.Db.weenie
     public class Position
     {
         public int positionType;
-        public int objCellId;
+        public long objCellId;
         public float x;
         public float y;
         public float z;

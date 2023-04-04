@@ -151,7 +151,7 @@ namespace WeenieViewer.Db
                 if (db.usingSQLite)
                     sql = "SELECT poi.name, (p.obj_Cell_Id), p.origin_X, p.origin_Y, p.origin_Z FROM `points_of_interest` as poi, `weenie_properties_position` as p where p.object_Id = poi.weenie_Class_Id and p.position_Type = 2 group by poi.weenie_Class_Id;";
                 else
-                    sql = "SELECT poi.name, HEX(p.obj_Cell_Id), p.origin_X, p.origin_Y, p.origin_Z FROM `points_of_interest` as poi, `weenie_properties_position` as p where p.object_Id = poi.weenie_Class_Id and p.position_Type = 2 group by poi.weenie_Class_Id;";
+                    sql = "SELECT poi.name, (p.obj_Cell_Id), p.origin_X, p.origin_Y, p.origin_Z FROM `points_of_interest` as poi, `weenie_properties_position` as p where p.object_Id = poi.weenie_Class_Id and p.position_Type = 2 group by poi.weenie_Class_Id;";
                 using (var reader = db.GetReader(sql))
                 {
                     while (reader.Read())
@@ -159,7 +159,7 @@ namespace WeenieViewer.Db
                         string name = reader.GetString(reader.GetOrdinal("name"));
                         var pos = new Position();
                         try {
-                            pos.objCellId = Convert.ToInt32(reader.GetValue(reader.GetOrdinal("obj_Cell_Id")));
+                            pos.objCellId = Convert.ToUInt32(reader.GetValue(reader.GetOrdinal("obj_Cell_Id")));
                             pos.x = reader.GetFloat(reader.GetOrdinal("origin_X"));
                             pos.y = reader.GetFloat(reader.GetOrdinal("origin_Y"));
                             pos.z = reader.GetFloat(reader.GetOrdinal("origin_Z"));
@@ -466,7 +466,7 @@ namespace WeenieViewer.Db
                 {
                     weenie.Position pos = new weenie.Position();
                     pos.positionType = reader.GetInt32(reader.GetOrdinal("position_Type"));
-                    pos.objCellId = reader.GetInt32(reader.GetOrdinal("obj_Cell_Id"));
+                    pos.objCellId = Convert.ToUInt32(reader.GetInt32(reader.GetOrdinal("obj_Cell_Id")));
 
                     pos.x = reader.GetFloat(reader.GetOrdinal("origin_X"));
                     pos.y = reader.GetFloat(reader.GetOrdinal("origin_Y"));
@@ -487,7 +487,7 @@ namespace WeenieViewer.Db
                 {
                     weenie.Position pos = new weenie.Position();
                     pos.positionType = -1;
-                    pos.objCellId = reader.GetInt32(reader.GetOrdinal("obj_Cell_Id"));
+                    pos.objCellId = reader.GetInt64(reader.GetOrdinal("obj_Cell_Id"));
 
                     pos.x = reader.GetFloat(reader.GetOrdinal("origin_X"));
                     pos.y = reader.GetFloat(reader.GetOrdinal("origin_Y"));
