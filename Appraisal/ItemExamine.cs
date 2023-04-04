@@ -1338,7 +1338,6 @@ namespace WeenieViewer.Appraisal
                     strDesc = gearPlatingName;
 
                 int iDecoration = 0;
-                string strMaterial = "";
                 if (InqInt(PropertyInt.APPRAISAL_LONG_DESC_DECORATION_INT, ref iDecoration))
                 {
                     int iGemCount = 0;

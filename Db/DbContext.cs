@@ -19,7 +19,7 @@ namespace WeenieViewer.Db
         public bool usingSQLite { get; private set; }
 
         public DbContext() {
-            usingSQLite = true;
+            usingSQLite = false;
             if (usingSQLite)
                 InitSQLite();
             else
@@ -84,7 +84,7 @@ namespace WeenieViewer.Db
             return true;
         }
 
-        public DbDataReader GetReader(string query, Dictionary<string, object?> parameters = null)
+        public DbDataReader GetReader(string query, Dictionary<string, object> parameters = null)
         {
             if (usingSQLite)
             {
