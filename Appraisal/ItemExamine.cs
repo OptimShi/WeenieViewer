@@ -712,7 +712,7 @@ namespace WeenieViewer.Appraisal
                 AddItemInfo($"You can only carry {iUnique} of these items.");
 
             float iCooldown = 0;
-            if (InqFloat((PropertyFloat)0xA7u, ref iCooldown))
+            if (InqFloat(PropertyFloat.COOLDOWN_DURATION_FLOAT, ref iCooldown))
             {
                 AddItemInfo("Cooldown When Used: " + DeltaTimeToString(iCooldown));
             }
