@@ -297,20 +297,35 @@ namespace WeenieViewer
             {
                 // Trigger the tab change to switch the Wiki button, if neccessary
                 tabGroup_SelectionChanged(null, null);
+
+                // Check if we need to swap database
+                bool isSQLite = WeenieViewerSettings.Default.DBType == "SQLite";
+                if (isSQLite != db.db.usingSQLite)
+                {
+                    db = new DbManager();
+                    db.Connect();
+                    lblVersion.Text = db.Version;
+                }
+
             }
+
         }
 
         private void DEBUG_OpenAllTheWeenies(object sender, RoutedEventArgs e)
         {
-            foreach(var w in db.WeenieNames)
+            MessageBoxResult messageBoxResult = MessageBox.Show("Are you sure?\n\nThis is a time consuming process you cannot quit.", "Open All Weenies", MessageBoxButton.YesNo);
+            if (messageBoxResult == MessageBoxResult.Yes)
             {
-                var weenie = db.GetWeenie(w.Key);
-                weenie = null;
-                /*
-                ViewWeenie(w.Key);
-                TabItem ti = tabGroup.SelectedItem as TabItem;
-                tabGroup.Items.Remove(ti);
-                */
+                foreach (var w in db.WeenieNames)
+                {
+                    var weenie = db.GetWeenie(w.Key);
+                    weenie = null;
+                    /*
+                    ViewWeenie(w.Key);
+                    TabItem ti = tabGroup.SelectedItem as TabItem;
+                    tabGroup.Items.Remove(ti);
+                    */
+                }
             }
         }
     }

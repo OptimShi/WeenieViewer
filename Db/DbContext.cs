@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using WeenieViewer.Properties;
 
 namespace WeenieViewer.Db
 {
@@ -19,7 +20,7 @@ namespace WeenieViewer.Db
         public bool usingSQLite { get; private set; }
 
         public DbContext() {
-            usingSQLite = false;
+            usingSQLite = WeenieViewerSettings.Default.DBType == "SQLite";
             if (usingSQLite)
                 InitSQLite();
             else
