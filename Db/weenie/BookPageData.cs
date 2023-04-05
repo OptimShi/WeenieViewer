@@ -9,7 +9,7 @@ namespace WeenieViewer.Db.weenie
     public class BookPageData
     {
         public int PageId;
-        public int AuthorId;
+        public long AuthorId;
         public string AuthorName;
         public string AuthorAccount;
         public bool IgnoreAuthor;

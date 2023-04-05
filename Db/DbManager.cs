@@ -363,7 +363,7 @@ namespace WeenieViewer.Db
                 {
                     SpellBook spellBook = new SpellBook();
                     spellBook.SpellId = reader.GetInt32(reader.GetOrdinal("spell"));
-                    spellBook.Probability = reader.GetFloat(reader.GetOrdinal("spell"));
+                    spellBook.Probability = reader.GetFloat(reader.GetOrdinal("probability"));
                     spellBook.Name = GetSpellName(spellBook.SpellId);
                     results.Add(spellBook);
                 }
@@ -403,7 +403,7 @@ namespace WeenieViewer.Db
                 {
                     BookPageData page = new BookPageData();
                     page.PageId = reader.GetInt32(reader.GetOrdinal("page_Id"));
-                    page.AuthorId= reader.GetInt32(reader.GetOrdinal("author_Id"));
+                    page.AuthorId= reader.GetInt64(reader.GetOrdinal("author_Id"));
                     page.AuthorName = reader.GetString(reader.GetOrdinal("author_Name"));
                     page.AuthorAccount = reader.GetString(reader.GetOrdinal("author_Account"));
 
@@ -466,7 +466,7 @@ namespace WeenieViewer.Db
                 {
                     weenie.Position pos = new weenie.Position();
                     pos.positionType = reader.GetInt32(reader.GetOrdinal("position_Type"));
-                    pos.objCellId = Convert.ToUInt32(reader.GetInt32(reader.GetOrdinal("obj_Cell_Id")));
+                    pos.objCellId = reader.GetInt64(reader.GetOrdinal("obj_Cell_Id"));
 
                     pos.x = reader.GetFloat(reader.GetOrdinal("origin_X"));
                     pos.y = reader.GetFloat(reader.GetOrdinal("origin_Y"));
@@ -651,9 +651,9 @@ namespace WeenieViewer.Db
                     if(!reader.IsDBNull(reader.GetOrdinal("weenie_Class_Id")))
                         emote.WeenieClassId = reader.GetInt32(reader.GetOrdinal("weenie_Class_Id"));
                     if (!reader.IsDBNull(reader.GetOrdinal("style")))
-                        emote.Style = reader.GetInt32(reader.GetOrdinal("style"));
+                        emote.Style = (uint)reader.GetInt64(reader.GetOrdinal("style"));
                     if (!reader.IsDBNull(reader.GetOrdinal("substyle")))
-                        emote.Substyle = reader.GetInt32(reader.GetOrdinal("substyle"));
+                        emote.Substyle = (uint)reader.GetInt64(reader.GetOrdinal("substyle"));
                     if (!reader.IsDBNull(reader.GetOrdinal("quest")))
                         emote.Quest = reader.GetString(reader.GetOrdinal("quest"));
                     if (!reader.IsDBNull(reader.GetOrdinal("vendor_Type")))

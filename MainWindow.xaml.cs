@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -15,9 +16,11 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Xml.Linq;
 using WeenieViewer.Controls;
 using WeenieViewer.Db;
 using WeenieViewer.Db.weenie;
+using WeenieViewer.Properties;
 
 namespace WeenieViewer
 {
@@ -31,10 +34,12 @@ namespace WeenieViewer
         public MainWindow()
         {
             InitializeComponent();
+
             lblResultsCount.Text = "";
             lblVersion.Text = "";
             btnCloseTab.Visibility = Visibility.Hidden;
-            btnWiki.Visibility = Visibility.Hidden; 
+            btnWiki.Visibility = Visibility.Hidden;
+            btnAcpedia.Visibility = Visibility.Hidden;
 
             // Init our SQLite Database
             db = new DbManager();
@@ -45,7 +50,19 @@ namespace WeenieViewer
             txtSearch.Focus();
 
             SetupHotKeys();
-            // txtSearch.Text = "Asheron"; 
+
+#if DEBUG
+            MenuItem newMenuItem = new MenuItem();
+            newMenuItem.Header = "Debug";
+            MainMenu.Items.Add(newMenuItem);
+
+            //Add to a sub item
+            MenuItem subMenuItem = new MenuItem();
+            subMenuItem.Header = "Open All Weenies";
+            subMenuItem.Click += new RoutedEventHandler(DEBUG_OpenAllTheWeenies);
+
+            newMenuItem.Items.Add(subMenuItem);
+#endif
         }
 
         private void View_OnClick(object sender, RoutedEventArgs e)
@@ -179,12 +196,22 @@ namespace WeenieViewer
             {
                 btnCloseTab.Visibility = Visibility.Collapsed;
                 btnWiki.Visibility = Visibility.Collapsed;
+                btnAcpedia.Visibility = Visibility.Collapsed;
                 lblResultsCount.Visibility = Visibility.Visible;
             }
             else
             {
                 btnCloseTab.Visibility = Visibility.Visible;
-                btnWiki.Visibility = Visibility.Visible;
+                if (WeenieViewerSettings.Default.useWikia)
+                {
+                    btnWiki.Visibility = Visibility.Visible;
+                    btnAcpedia.Visibility = Visibility.Collapsed;
+                }
+                else
+                {
+                    btnWiki.Visibility = Visibility.Collapsed;
+                    btnAcpedia.Visibility = Visibility.Visible;
+                }
                 lblResultsCount.Visibility = Visibility.Collapsed;
             }
         }
@@ -244,11 +271,47 @@ namespace WeenieViewer
             Process.Start(new ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });
         }
 
+        private void btnAcpedia_Click(object sender, RoutedEventArgs e)
+        {
+            TabItem ti = tabGroup.SelectedItem as TabItem;
+            TabWeenie content = ti.Content as TabWeenie;
+
+            string name = content.name;
+            string url = "http://www.acpedia.org/?search=" + Uri.EscapeDataString(name);
+            Process.Start(new ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });
+        }
+
         private void miAbout_Click(object sender, RoutedEventArgs e)
         {
             var about = new DialogAbout();
             about.Owner = this;
             about.ShowDialog();
+        }
+
+        private void miOptions_Click(object sender, RoutedEventArgs e)
+        {
+            var options = new DialogOptions();
+            options.Owner = this;
+            var optionsResult = options.ShowDialog();
+            if (optionsResult != null && (bool)optionsResult)
+            {
+                // Trigger the tab change to switch the Wiki button, if neccessary
+                tabGroup_SelectionChanged(null, null);
+            }
+        }
+
+        private void DEBUG_OpenAllTheWeenies(object sender, RoutedEventArgs e)
+        {
+            foreach(var w in db.WeenieNames)
+            {
+                var weenie = db.GetWeenie(w.Key);
+                weenie = null;
+                /*
+                ViewWeenie(w.Key);
+                TabItem ti = tabGroup.SelectedItem as TabItem;
+                tabGroup.Items.Remove(ti);
+                */
+            }
         }
     }
 }
