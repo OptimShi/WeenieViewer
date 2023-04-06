@@ -19,12 +19,15 @@ namespace WeenieViewer.Db
         private MySqlConnection mysql;
         public bool usingSQLite { get; private set; }
 
+        // Wether or not we successfully opened a database connection
+        public bool Connected { get; private set; }
+
         public DbContext() {
             usingSQLite = WeenieViewerSettings.Default.DBType == "SQLite";
             if (usingSQLite)
-                InitSQLite();
+                Connected = InitSQLite();
             else
-                InitMySQL();
+                Connected = InitMySQL();
         }
 
         public void Close()
@@ -35,7 +38,12 @@ namespace WeenieViewer.Db
 
         private bool InitSQLite()
         {
-            string dbName = Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "ace_world.db");
+            string dbName;
+            if (WeenieViewerSettings.Default.sqlite_dbname != "")
+                dbName = WeenieViewerSettings.Default.sqlite_dbname;
+            else
+                dbName = Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "ace_world.db");
+
 #if DEBUG
             dbName = "D:\\Web Development\\sqlite\\ace_world.db"; // For Testing Purposes
 #endif

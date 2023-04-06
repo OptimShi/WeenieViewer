@@ -43,26 +43,38 @@ namespace WeenieViewer
 
             // Init our SQLite Database
             db = new DbManager();
-            db.Connect();
-            lblVersion.Text = db.Version;
+            var connected = db.Connect();
+            if (connected)
+            {
+                lblVersion.Text = db.Version;
 
-            txtSearch.TextChanged += new TextChangedEventHandler(txtSearch_TextChanged);
-            txtSearch.Focus();
+                txtSearch.TextChanged += new TextChangedEventHandler(txtSearch_TextChanged);
+                txtSearch.Focus();
 
-            SetupHotKeys();
+                SetupHotKeys();
 
 #if DEBUG
-            MenuItem newMenuItem = new MenuItem();
-            newMenuItem.Header = "Debug";
-            MainMenu.Items.Add(newMenuItem);
+                MenuItem newMenuItem = new MenuItem();
+                newMenuItem.Header = "Debug";
+                MainMenu.Items.Add(newMenuItem);
 
-            //Add to a sub item
-            MenuItem subMenuItem = new MenuItem();
-            subMenuItem.Header = "Open All Weenies";
-            subMenuItem.Click += new RoutedEventHandler(DEBUG_OpenAllTheWeenies);
+                //Add to a sub item
+                MenuItem subMenuItem = new MenuItem();
+                subMenuItem.Header = "Open All Weenies";
+                subMenuItem.Click += new RoutedEventHandler(DEBUG_OpenAllTheWeenies);
 
-            newMenuItem.Items.Add(subMenuItem);
+                newMenuItem.Items.Add(subMenuItem);
 #endif
+            }
+            else
+            {
+                PromptForDBConnection();
+            }
+        }
+
+        private void PromptForDBConnection()
+        {
+            throw new NotImplementedException();
         }
 
         private void View_OnClick(object sender, RoutedEventArgs e)

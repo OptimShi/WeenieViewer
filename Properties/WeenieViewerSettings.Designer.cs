@@ -109,7 +109,7 @@ namespace WeenieViewer.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("ace_world.db")]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
         public string sqlite_dbname {
             get {
                 return ((string)(this["sqlite_dbname"]));

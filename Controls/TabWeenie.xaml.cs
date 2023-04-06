@@ -184,7 +184,13 @@ namespace WeenieViewer
             else
             {
                 Paragraph myParagraph = new Paragraph();
-                myParagraph.Inlines.Add(appraisal.Text);
+                string info = "";
+                string name = "";
+                if (Weenie.Strings.ContainsKey(PropertyString.NAME_STRING))
+                    name = Weenie.Strings[PropertyString.NAME_STRING];
+                info = "Name: " + name + "\n";
+                info += $"WeenieType: {(WeenieType)Weenie.WeenieType}\nWeenieClass: {Weenie.WeenieClass}\n\n";
+                myParagraph.Inlines.Add(info + appraisal.Text);
                 myFlowDoc.Blocks.Add(myParagraph);
             }
 

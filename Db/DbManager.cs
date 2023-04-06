@@ -22,15 +22,19 @@ namespace WeenieViewer.Db
         public Dictionary<int, string> WeenieNames;
 
 
-        public void Connect()
+        public bool Connect()
         {
             db = new DbContext();
+            if(db.Connected)
+            {
+                GetVersion();
+                LoadWeenieNames();
+                LoadSpells();
+                LoadPointsOfInterest();
+                return true;
+            }
 
-            GetVersion();
-
-            LoadWeenieNames();
-            LoadSpells();
-            LoadPointsOfInterest();
+            return false;
         }
 
         public void Disconnect()
@@ -466,7 +470,7 @@ namespace WeenieViewer.Db
                 {
                     weenie.Position pos = new weenie.Position();
                     pos.positionType = reader.GetInt32(reader.GetOrdinal("position_Type"));
-                    pos.objCellId = reader.GetInt64(reader.GetOrdinal("obj_Cell_Id"));
+                    pos.objCellId = (uint)reader.GetInt64(reader.GetOrdinal("obj_Cell_Id"));
 
                     pos.x = reader.GetFloat(reader.GetOrdinal("origin_X"));
                     pos.y = reader.GetFloat(reader.GetOrdinal("origin_Y"));
@@ -487,7 +491,7 @@ namespace WeenieViewer.Db
                 {
                     weenie.Position pos = new weenie.Position();
                     pos.positionType = -1;
-                    pos.objCellId = reader.GetInt64(reader.GetOrdinal("obj_Cell_Id"));
+                    pos.objCellId = (uint)reader.GetInt64(reader.GetOrdinal("obj_Cell_Id"));
 
                     pos.x = reader.GetFloat(reader.GetOrdinal("origin_X"));
                     pos.y = reader.GetFloat(reader.GetOrdinal("origin_Y"));
