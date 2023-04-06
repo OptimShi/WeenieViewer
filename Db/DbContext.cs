@@ -65,12 +65,13 @@ namespace WeenieViewer.Db
 
         private bool InitMySQL()
         {
-            string host = "localhost";
-            string user = "root";
-            string pass = "";
-            string dbname = "ace_world";
+            string host = WeenieViewerSettings.Default.mysql_host;
+            string user = WeenieViewerSettings.Default.mysql_user;
+            string pass = WeenieViewerSettings.Default.mysql_pass;
+            string dbname = WeenieViewerSettings.Default.mysql_dbname;
+            string port = WeenieViewerSettings.Default.mysql_port;
 
-            string connect = $"server={host};database={dbname};uid={user};pwd={pass}";
+            string connect = $"server={host};port={port};database={dbname};uid={user};pwd={pass}";
             try
             {
                 mysql = new MySqlConnection(connect);

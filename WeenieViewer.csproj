@@ -15,9 +15,13 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="EmoteScript\**" />
+    <Compile Remove="packages\**" />
     <EmbeddedResource Remove="EmoteScript\**" />
+    <EmbeddedResource Remove="packages\**" />
     <None Remove="EmoteScript\**" />
+    <None Remove="packages\**" />
     <Page Remove="EmoteScript\**" />
+    <Page Remove="packages\**" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="Graphics\acpedia.png" />
@@ -46,7 +50,6 @@
     <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
     <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
     <PackageReference Include="System.Data.SQLite" Version="1.0.117.0" />
-    <PackageReference Include="Microsoft.Windows.Compatibility" Version="7.0.0" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Properties\WeenieViewerSettings.Designer.cs">

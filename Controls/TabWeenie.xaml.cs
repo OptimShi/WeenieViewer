@@ -270,6 +270,13 @@ namespace WeenieViewer
                 WeenieTabControl.Items.Add(trophyTab);
             }
 
+            var housing = Weenie.CreateList.Where(x => ((x.destinationType & 16) != 0) || (x.destinationType & 32) != 0).ToList();
+            if (housing.Count > 0)
+            {
+                var housingTab = new TabHousing(Weenie.CreateList);
+                WeenieTabControl.Items.Add(housingTab);
+            }
+
             //tabProps.IsSelected = true;
             tabItem.IsSelected = true;
 
