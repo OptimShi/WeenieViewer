@@ -43,7 +43,7 @@ namespace EmoteScriptLib
         public DestinationType? DestinationType { get; set; }
         public uint? WeenieClassId { get; set; }
         public int? StackSize { get; set; }
-        public int? Palette { get; set; }
+        public PaletteTemplate? Palette { get; set; }
         public float? Shade { get; set; }
         public bool? TryToBond { get; set; }
         public uint? ObjCellId { get; set; }
@@ -125,7 +125,7 @@ namespace EmoteScriptLib
             if (emote.cprof != null)
             {
                 WeenieClassId = emote.cprof.wcid;
-                Palette = (int?)emote.cprof.palette;
+                Palette = (PaletteTemplate?)emote.cprof.palette;
                 Shade = (float?)emote.cprof.shade;
                 DestinationType = (DestinationType?)emote.cprof.destination;
                 StackSize = emote.cprof.stack_size;
@@ -616,6 +616,9 @@ namespace EmoteScriptLib
             if (Delay != null && Delay != 0.0f)
                 result += $"Delay: {Delay}, ";
 
+            if (Extent != null && Extent > 1.0f)
+                result += $"Extent: {Extent}, ";
+
             result += Type;
 
             var fluentString = GetFluentString();
@@ -673,14 +676,14 @@ namespace EmoteScriptLib
 
                 case EmoteType.AwardLuminance:
                 case EmoteType.SpendLuminance:
-                    return $"{HeroXP64:N0}";
+                    return $"{Amount64:N0}";
 
                 case EmoteType.AwardSkillXP:
                 case EmoteType.AwardSkillPoints:
                     return $"{((Skill)Stat).ToSentence()}, {Amount:N0}";
 
                 case EmoteType.CreateTreasure:
-                    return $"Type: {TreasureType}, Class: {TreasureClass}, WealthRating: {WealthRating}";
+                    return $"TreasureType: {TreasureType}, TreasureClass: {TreasureClass}, WealthRating: {WealthRating}";
 
                 case EmoteType.SetFloatStat:
                     return $"{(PropertyFloat)Stat}, {Percent}";
@@ -811,7 +814,9 @@ namespace EmoteScriptLib
 
                     var wcid = WeenieClassId.Value;
                     var stackSize = (StackSize ?? 1) != 1 ? $", {StackSize:N0}" : "";
-                    return $"{WeenieName}{stackSize}";
+                    var palette = (Palette ?? 0) != 0 ? $", Palette: {(PaletteTemplate)Palette}" : ""; ;
+                    var shade = (Shade ?? 0) != 0 ? $", Shade: {Shade:0.######}" : ""; ;
+                    return $"{WeenieName}{stackSize}{palette}{shade}";
 
                 case EmoteType.InqOwnsItems:
 
