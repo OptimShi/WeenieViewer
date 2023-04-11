@@ -13,7 +13,12 @@
             <ComboBoxItem Content="SQLite"/>
         </ComboBox>
 
+        <Grid x:Name="SQLite_Options" Margin="0,60,50,35">
+            <Label Content="Database:" HorizontalAlignment="Left" Margin="24,10,0,0" VerticalAlignment="Top"/>
+            <TextBox x:Name="txtSQLiteDB" HorizontalAlignment="Left" Height="23" Margin="86,14,0,0" VerticalAlignment="Top" Width="384"/>
+            <Button x:Name="btnSQLiteBrowse" Content="Browse" HorizontalAlignment="Left" Height="23" Margin="471,14,0,0" VerticalAlignment="Top" Width="54" Click="btnSQLiteBrowse_Click"/>
 
+        </Grid>
         <Grid x:Name="MySQL_Options" Margin="0,60,290,35">
             <Label Content="Host:" HorizontalAlignment="Left" Margin="44,10,0,0" VerticalAlignment="Top"/>
             <TextBox x:Name="txtMysqlHost" HorizontalAlignment="Left" Height="23" Margin="86,14,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="200"/>
@@ -28,6 +33,7 @@
             
             <Button Content="Test Connection" HorizontalAlignment="Left" Margin="181,231,0,0" VerticalAlignment="Top" Width="105" Click="TestConnectionButton_Click"/>
         </Grid>
+        
         <Button x:Name="btnOk" Content="OK" HorizontalAlignment="Right" VerticalAlignment="Bottom" MinWidth="80" Margin="0,0,110,10" IsDefault="True" ToolTip="Save Options and Close Window" Click="btnOK_Click" />
         <Button x:Name="btnCancel" Content="Cancel" HorizontalAlignment="Right" VerticalAlignment="Bottom" MinWidth="80" Margin="0,0,10,10" IsCancel="True" ToolTip="Cancel Changes" />
         <Label Content="Wiki Source:" HorizontalAlignment="Left" Margin="330,13,0,0" VerticalAlignment="Top"/>

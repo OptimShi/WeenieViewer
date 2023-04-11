@@ -95,9 +95,11 @@ namespace WeenieViewer.Controls
             {
                 case "SQLite":
                     MySQL_Options.Visibility = Visibility.Collapsed;
+                    SQLite_Options.Visibility = Visibility.Visible;
                     break;
                 case "MySQL":
                     MySQL_Options.Visibility = Visibility.Visible;
+                    SQLite_Options.Visibility = Visibility.Collapsed;
                     break;
             }
         }
@@ -105,6 +107,22 @@ namespace WeenieViewer.Controls
         private void cbxWiki_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
 
+        }
+
+        private void btnSQLiteBrowse_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new Microsoft.Win32.OpenFileDialog();
+            dialog.FileName = "Document"; // Default file name
+            dialog.DefaultExt = ".txt"; // Default file extension
+            dialog.Filter = "SQLite Database (.db)|*.db|All Files (*.*)|*.*"; // Filter files by extension
+
+            // Show open file dialog box
+            bool? result = dialog.ShowDialog();
+
+            if (result == true)
+            {
+                txtSQLiteDB.Text = dialog.FileName;
+            }
         }
     }
 }
