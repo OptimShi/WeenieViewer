@@ -111,7 +111,7 @@ namespace WeenieViewer
                 }
                 else
                 {
-                    searchResults = db.SearchForWeenie(criteria);
+                    searchResults = db.SearchForWeenie(criteria.Trim());
                 }
                 
                 foreach(var w in searchResults)
@@ -244,10 +244,12 @@ namespace WeenieViewer
         {
             try
             {
+                // Ctrl + W closes current tab
                 RoutedCommand firstSettings = new RoutedCommand();
                 firstSettings.InputGestures.Add(new KeyGesture(Key.W, ModifierKeys.Control));
                 CommandBindings.Add(new CommandBinding(firstSettings, CloseTab));
 
+                // Ctrl + S brings up the Spell Search dialog
                 var spellSearch = new RoutedCommand();
                 spellSearch.InputGestures.Add(new KeyGesture(Key.S, ModifierKeys.Control));
                 CommandBindings.Add(new CommandBinding(spellSearch, miSearchSpells_Click));

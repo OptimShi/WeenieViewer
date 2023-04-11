@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Markup;
+using System.Xml.Linq;
 using MySqlConnector;
 using WeenieViewer.Db.weenie;
 using WeenieViewer.Enums;
@@ -71,41 +72,14 @@ namespace WeenieViewer.Db
         }
 
         public Dictionary<int, string> SearchForWeenie(string name)
-        {
-            Dictionary<string, object> dbParams = new Dictionary<string, object>();
-            dbParams.Add("@name", "%" + name + "%");
-            string sql = "SELECT `object_Id`, `value` FROM `weenie_properties_string` WHERE `type` = 1 and `value` like @name order by `object_Id` asc";
-
-            Dictionary<int, string> results = new Dictionary<int, string>();
-
-            using (var reader = db.GetReader(sql, dbParams))
-            {
-                while (reader.Read())
-                {
-                    var object_Id = reader.GetInt32(0);
-                    var WeenieName = reader.GetString(1);
-                    results.Add(object_Id, WeenieName);
-                }
-            }
+        {   
+            Dictionary<int, string> results = WeenieNames.Where(x=>x.Value.Contains(name, StringComparison.OrdinalIgnoreCase)).ToDictionary(x=>x.Key, x=>x.Value);
             return results;
         }
 
         public Dictionary<int, string> SearchForWCID(string WCID)
         {
-            Dictionary<int, string> results = new Dictionary<int, string>();
-            string sql =
-                $"SELECT `object_Id`, `value` FROM `weenie_properties_string` WHERE `type` = 1 and `object_Id` = @wcid limit 1";
-
-            Dictionary<string, object> dbParams = new Dictionary<string, object> { { "@wcid", WCID } };
-            using (var reader = db.GetReader(sql, dbParams))
-            {
-                while (reader.Read())
-                {
-                    var object_Id = reader.GetInt32(0);
-                    var WeenieName = reader.GetString(1);
-                    results.Add(object_Id, WeenieName);
-                }
-            }
+            Dictionary<int, string> results = WeenieNames.Where(x => x.Key.ToString().StartsWith(WCID)).ToDictionary(x => x.Key, x => x.Value);
             return results;
         }
 
