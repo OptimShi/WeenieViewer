@@ -24,7 +24,7 @@
       <Value Profile="(Default)">ace_world</Value>
     </Setting>
     <Setting Name="sqlite_dbname" Type="System.String" Scope="User">
-      <Value Profile="(Default)" />
+      <Value Profile="(Default)">ace_world.db</Value>
     </Setting>
   </Settings>
 </SettingsFile>

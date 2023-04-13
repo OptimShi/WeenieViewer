@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using MySqlConnector;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -52,6 +53,8 @@ namespace WeenieViewer.Controls
             txtMysqlPass.Text = WeenieViewerSettings.Default.mysql_pass;
             txtMysqlPort.Text = WeenieViewerSettings.Default.mysql_port;
             txtMysqlUser.Text = WeenieViewerSettings.Default.mysql_user;
+
+            txtSQLiteDB.Text = WeenieViewerSettings.Default.sqlite_dbname;
         }
 
         private void btnOK_Click(object sender, RoutedEventArgs e)
@@ -66,6 +69,8 @@ namespace WeenieViewer.Controls
             WeenieViewerSettings.Default.mysql_port = txtMysqlPort.Text;
             WeenieViewerSettings.Default.mysql_user = txtMysqlUser.Text;
 
+            WeenieViewerSettings.Default.sqlite_dbname = txtSQLiteDB.Text;
+
             WeenieViewerSettings.Default.Save();
 
             this.DialogResult = true;
@@ -78,12 +83,47 @@ namespace WeenieViewer.Controls
 
         private void TestConnectionButton_Click(object sender, RoutedEventArgs e)
         {
+            Mouse.OverrideCursor = Cursors.Wait;
             var dbType = ((ComboBoxItem)cbxDBType.SelectedItem).Content.ToString();
             switch (dbType)
             {
                 case "SQLite":
+                    // Do nothing, I guess...
                     break;
                 case "MySQL":
+                    string host = txtMysqlHost.Text.Trim();
+                    string user = txtMysqlUser.Text.Trim();
+                    string pass = txtMysqlPass.Text.Trim();
+                    string dbname = txtMysqlDB.Text.Trim();
+                    string port = txtMysqlPort.Text.Trim();
+
+                    string connect = $"server={host};port={port};database={dbname};uid={user};pwd={pass}";
+                    MySqlConnection mysql;
+                    try
+                    {
+                        mysql = new MySqlConnection(connect);
+                        mysql.Open();
+                        var command = mysql.CreateCommand();
+                        command.CommandText = "select * from weenie limit 1";
+                        using (var reader = command.ExecuteReader())
+                        {
+                            while(reader.Read()) {
+                                var classId = reader.GetInt32(reader.GetOrdinal("class_Id"));
+                                string className = reader.GetString(reader.GetOrdinal("class_Name"));
+                            }
+                        }
+                        mysql.Close();
+                        mysql.Dispose();
+                    }
+                    catch (Exception ex)
+                    {
+                        string errorMsg = "Could not connect to MySQL Database.\n\n" + ex.Message;
+                        Mouse.OverrideCursor = Cursors.Arrow;
+                        MessageBox.Show(errorMsg, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
+                    Mouse.OverrideCursor = Cursors.Arrow;
+                    MessageBox.Show("Connection Successful!", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
                     break;
             }
         }
@@ -104,17 +144,14 @@ namespace WeenieViewer.Controls
             }
         }
 
-        private void cbxWiki_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-
-        }
-
         private void btnSQLiteBrowse_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new Microsoft.Win32.OpenFileDialog();
-            dialog.FileName = "Document"; // Default file name
             dialog.DefaultExt = ".txt"; // Default file extension
             dialog.Filter = "SQLite Database (.db)|*.db|All Files (*.*)|*.*"; // Filter files by extension
+            dialog.FileName = System.IO.Path.GetFileName(txtSQLiteDB.Text); ; // Default file name
+
+            dialog.InitialDirectory = System.IO.Path.GetDirectoryName(txtSQLiteDB.Text);
 
             // Show open file dialog box
             bool? result = dialog.ShowDialog();

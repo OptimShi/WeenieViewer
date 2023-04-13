@@ -64,9 +64,6 @@ namespace WeenieViewer.Db
                     else
                         dbType = "MySQL";
                     Version = $"{dbType} - ace_world Base: {version_base}, Patch: {version_patch}, Date: {mod.ToString()}";
-                    //var object_Id = reader.Get(0);
-                    //var WeenieName = reader.GetString(1);
-
                 }
             }
         }
@@ -771,6 +768,71 @@ namespace WeenieViewer.Db
             return results;
         }
 
+        internal bool RegnerateEmoteScriptTxtFiles()
+        {
+            // Just make sure database is connected before blasting these files away...
+            if(db.Connected == false) return false;
 
+            try
+            {
+                // General SpellName.txt
+                string sql = "select id, name from spell order by id";
+
+                string txtFile = Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "StringMap", "SpellName.txt");
+                using (StreamWriter theFile = new StreamWriter(txtFile, false))
+                {
+                    theFile.WriteLine("// select id, name from spell order by id;");
+                    using (var reader = db.GetReader(sql))
+                    {
+                        while (reader.Read())
+                        {
+                            string name = reader.GetString(reader.GetOrdinal("name"));
+                            int spellId = reader.GetInt32(reader.GetOrdinal("id"));
+                            theFile.WriteLine($"{spellId},{name}");
+                        }
+                    }
+                }
+
+                sql = "select class_Id, class_Name from weenie order by class_Id";
+
+                txtFile = Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "StringMap", "WeenieClassName.txt");
+                using (StreamWriter theFile = new StreamWriter(txtFile, false))
+                {
+                    theFile.WriteLine("// select class_Id, class_Name from weenie order by class_Id;");
+                    using (var reader = db.GetReader(sql))
+                    {
+                        while (reader.Read())
+                        {
+                            string name = reader.GetString(reader.GetOrdinal("class_Name"));
+                            int classId = reader.GetInt32(reader.GetOrdinal("class_Id"));
+                            theFile.WriteLine($"{classId},{name}");
+                        }
+                    }
+                }
+
+                sql = "select object_Id,value from weenie_properties_string where `type`= 1 order by object_Id";
+                txtFile = Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "StringMap", "WeenieName.txt");
+                using (StreamWriter theFile = new StreamWriter(txtFile, false))
+                {
+                    theFile.WriteLine("// select object_Id,value from weenie_properties_string where `type`= 1 order by object_Id;");
+                    using (var reader = db.GetReader(sql))
+                    {
+                        while (reader.Read())
+                        {
+                            string name = reader.GetString(reader.GetOrdinal("value"));
+                            int id = reader.GetInt32(reader.GetOrdinal("object_Id"));
+                            theFile.WriteLine($"{id},{name}");
+                        }
+                    }
+                }
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+
+        }
     }
 }

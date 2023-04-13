@@ -27,6 +27,7 @@
                 <MenuItem x:Name="miSearchSpells" Header="Spells..." Click="miSearchSpells_Click" InputGestureText="Ctrl+S" />
             </MenuItem>
             <MenuItem Header="Tools">
+                <MenuItem x:Name="miRegenerateTxtFiles" Header="Regenerate EmoteScript Files" Click="miRegenerateTxtFiles_Click"  />
                 <MenuItem x:Name="miOptions" Header="Options..." Click="miOptions_Click" />
             </MenuItem>
             <MenuItem Header="Help">

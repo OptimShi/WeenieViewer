@@ -7,6 +7,8 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Automation.Peers;
+using System.Windows.Automation.Provider;
 using System.Windows.Controls;
 using System.Windows.Controls.Ribbon;
 using System.Windows.Data;
@@ -41,18 +43,16 @@ namespace WeenieViewer
             btnWiki.Visibility = Visibility.Hidden;
             btnAcpedia.Visibility = Visibility.Hidden;
 
+            // Add event handler when typing in weenie search box
+            txtSearch.TextChanged += new TextChangedEventHandler(txtSearch_TextChanged);
+            SetupHotKeys();
+
             // Init our SQLite Database
             db = new DbManager();
             var connected = db.Connect();
             if (connected)
             {
-                lblVersion.Text = db.Version;
-
-                txtSearch.TextChanged += new TextChangedEventHandler(txtSearch_TextChanged);
-                txtSearch.Focus();
-
-                SetupHotKeys();
-
+                OnDbConnection();
 #if DEBUG
                 MenuItem newMenuItem = new MenuItem();
                 newMenuItem.Header = "Debug";
@@ -72,9 +72,44 @@ namespace WeenieViewer
             }
         }
 
+        private void OnDbConnection()
+        {
+            // Clear search
+            lstSearchResults.Items.Clear();
+
+            txtSearch.IsEnabled = true;
+            txtSearch.Text = string.Empty; // Clear any previous input
+            txtSearch.Focus();
+
+            // Set StatusBar info
+            lblVersion.Text = db.Version;
+
+            miSearchSpells.IsEnabled = true;
+        }
+
+        private void OnDbNoConnection()
+        {
+            // Clear search
+            lstSearchResults.Items.Clear();
+
+            // Disable and clear search box
+            txtSearch.Text = string.Empty;
+            txtSearch.IsEnabled = false;
+
+            // Set StatusBar info
+            lblVersion.Text = "Database Not Connected";
+
+            miSearchSpells.IsEnabled = false;
+        }
+
         private void PromptForDBConnection()
         {
-            throw new NotImplementedException();
+            OnDbNoConnection();
+
+            // Click the "Options" menu... WPF is different
+            MenuItemAutomationPeer peer = new MenuItemAutomationPeer(miOptions);
+            IInvokeProvider invokeProv = peer.GetPattern(PatternInterface.Invoke) as IInvokeProvider;
+            invokeProv.Invoke();
         }
 
         private void View_OnClick(object sender, RoutedEventArgs e)
@@ -312,17 +347,45 @@ namespace WeenieViewer
                 // Trigger the tab change to switch the Wiki button, if neccessary
                 tabGroup_SelectionChanged(null, null);
 
-                // Check if we need to swap database
+                // Check if we need to swap database or connect in the first place
                 bool isSQLite = WeenieViewerSettings.Default.DBType == "SQLite";
-                if (isSQLite != db.db.usingSQLite)
+                if (!db.db.Connected || isSQLite != db.db.usingSQLite)
                 {
                     db = new DbManager();
-                    db.Connect();
-                    lblVersion.Text = db.Version;
+                    if (db.Connect())
+                    {
+                        OnDbConnection();
+                    }
+                    else
+                    {
+                        PromptForDBConnection();
+                    }
                 }
 
             }
 
+        }
+
+        /// <summary>
+        /// Rebuilds the EmoteScript text files, used to label items e.g. Refuse: ITEM NAME (WCID)
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void miRegenerateTxtFiles_Click(object sender, RoutedEventArgs e)
+        {
+            var result = MessageBox.Show("Do you want to regenerate your EmoteScript text files?", "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            if (result == MessageBoxResult.Yes)
+            {
+                if (db.RegnerateEmoteScriptTxtFiles())
+                {
+                    MessageBox.Show("Files successfully regenerated.", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                else
+                {
+                    string message = "There was an error regenerating the EmoteScript text files.";
+                    MessageBox.Show(message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
         }
 
         private void DEBUG_OpenAllTheWeenies(object sender, RoutedEventArgs e)
@@ -330,15 +393,19 @@ namespace WeenieViewer
             MessageBoxResult messageBoxResult = MessageBox.Show("Are you sure?\n\nThis is a time consuming process you cannot quit.", "Open All Weenies", MessageBoxButton.YesNo);
             if (messageBoxResult == MessageBoxResult.Yes)
             {
-                foreach (var w in db.WeenieNames)
+                MessageBoxResult messageBoxResult2 = MessageBox.Show("Are you REALLY sure?\n\nThis takes forever...", "Open All Weenies", MessageBoxButton.YesNo);
+                if (messageBoxResult2 == MessageBoxResult.Yes)
                 {
-                    var weenie = db.GetWeenie(w.Key);
-                    weenie = null;
-                    /*
-                    ViewWeenie(w.Key);
-                    TabItem ti = tabGroup.SelectedItem as TabItem;
-                    tabGroup.Items.Remove(ti);
-                    */
+                    foreach (var w in db.WeenieNames)
+                    {
+                        var weenie = db.GetWeenie(w.Key);
+                        weenie = null;
+                        /*
+                        ViewWeenie(w.Key);
+                        TabItem ti = tabGroup.SelectedItem as TabItem;
+                        tabGroup.Items.Remove(ti);
+                        */
+                    }
                 }
             }
         }

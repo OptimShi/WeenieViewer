@@ -37,7 +37,7 @@
         <Button x:Name="btnOk" Content="OK" HorizontalAlignment="Right" VerticalAlignment="Bottom" MinWidth="80" Margin="0,0,110,10" IsDefault="True" ToolTip="Save Options and Close Window" Click="btnOK_Click" />
         <Button x:Name="btnCancel" Content="Cancel" HorizontalAlignment="Right" VerticalAlignment="Bottom" MinWidth="80" Margin="0,0,10,10" IsCancel="True" ToolTip="Cancel Changes" />
         <Label Content="Wiki Source:" HorizontalAlignment="Left" Margin="330,13,0,0" VerticalAlignment="Top"/>
-        <ComboBox x:Name="cbxWiki" HorizontalAlignment="Left" Margin="410,15,0,0" VerticalAlignment="Top" Width="120" SelectionChanged="cbxWiki_SelectionChanged">
+        <ComboBox x:Name="cbxWiki" HorizontalAlignment="Left" Margin="410,15,0,0" VerticalAlignment="Top" Width="120">
             <ComboBoxItem Content="Fandom"/>
             <ComboBoxItem Content="ACPedia"/>
         </ComboBox>
