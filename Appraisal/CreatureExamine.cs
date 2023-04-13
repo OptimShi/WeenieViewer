@@ -17,7 +17,7 @@ namespace WeenieViewer.Appraisal
 
             string name = "";
             InqString(PropertyString.NAME_STRING, ref name);
-            info = "Name: " + name + "\n\n";
+            info = "Name: " + name + "\n";
 
             info += $"WeenieType: {(WeenieType)Weenie.WeenieType}\nWeenieClass: {Weenie.WeenieClass}\n\n";
 

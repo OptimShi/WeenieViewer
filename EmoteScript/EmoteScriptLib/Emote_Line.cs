@@ -51,16 +51,18 @@ namespace EmoteScriptLib
             { EmoteField.AnglesZ,         FieldType.Float },
         };
 
-        public Emote_Line(EmoteType type, Dictionary<string, string> dict, float? delay = null)
+        public Emote_Line(EmoteType type, Dictionary<string, string> dict, float? delay = null, float? extent = null)
         {
-            Emote = BuildEmote(type, dict, delay);
+            Emote = BuildEmote(type, dict, delay, extent);
         }
 
-        public static Emote BuildEmote(EmoteType type, Dictionary<string, string> dict, float? delay = null)
+        public static Emote BuildEmote(EmoteType type, Dictionary<string, string> dict, float? delay = null, float? extent = null)
         {
             var emote = Factory.Create(type);
 
             emote.Delay = delay;
+
+            emote.Extent = extent;
 
             var kvps = ParseFieldDictionary(type, dict);
 
@@ -181,7 +183,7 @@ namespace EmoteScriptLib
                         break;
 
                     case EmoteField.Palette:
-                        emote.Palette = Parser.TryParseInt(val);
+                        emote.Palette = Parser.TryParsePaletteTemplate(val);
                         break;
 
                     case EmoteField.Shade:
@@ -550,7 +552,7 @@ namespace EmoteScriptLib
             { EmoteType.AdminSpam, new List<EmoteField>() { EmoteField.Message } },
             { EmoteType.AwardLevelProportionalSkillXP, new List<EmoteField>() { EmoteField.SkillStat, EmoteField.Percent, EmoteField.Range64 } },
             { EmoteType.AwardLevelProportionalXP, new List<EmoteField>() { EmoteField.Percent, EmoteField.Range64, EmoteField.Display } },
-            { EmoteType.AwardLuminance, new List<EmoteField>() { EmoteField.HeroXP64 } },
+            { EmoteType.AwardLuminance, new List<EmoteField>() { EmoteField.Amount64 } },
             { EmoteType.AwardNoShareXP, new List<EmoteField>() { EmoteField.Amount64 } },
             { EmoteType.AwardSkillPoints, new List<EmoteField>() { EmoteField.SkillStat, EmoteField.Amount } },
             { EmoteType.AwardSkillXP, new List<EmoteField>() { EmoteField.SkillStat, EmoteField.Amount } },
@@ -567,7 +569,7 @@ namespace EmoteScriptLib
             { EmoteType.EraseQuest, new List<EmoteField>() { EmoteField.Message } },
             { EmoteType.FellowBroadcast, new List<EmoteField>() { EmoteField.Message } },
             { EmoteType.ForceMotion, new List<EmoteField>() { EmoteField.Motion } },
-            { EmoteType.Give, new List<EmoteField>() { EmoteField.WeenieClassId, EmoteField.StackSize } },
+            { EmoteType.Give, new List<EmoteField>() { EmoteField.WeenieClassId, EmoteField.StackSize, EmoteField.Palette, EmoteField.Shade } },
             { EmoteType.Goto, new List<EmoteField>() { EmoteField.Message } },
             { EmoteType.IncrementIntStat, new List<EmoteField>() { EmoteField.PropertyIntStat, EmoteField.Amount } },
             { EmoteType.IncrementMyQuest, new List<EmoteField>() { EmoteField.Message, EmoteField.Amount } },
@@ -621,7 +623,7 @@ namespace EmoteScriptLib
             { EmoteType.SetQuestBitsOff, new List<EmoteField>() { EmoteField.Message, EmoteField.Amount } },
             { EmoteType.SetQuestBitsOn, new List<EmoteField>() { EmoteField.Message, EmoteField.Amount } },
             { EmoteType.SetQuestCompletions, new List<EmoteField>() { EmoteField.Message, EmoteField.Amount } },
-            { EmoteType.SpendLuminance, new List<EmoteField>() { EmoteField.HeroXP64 } },
+            { EmoteType.SpendLuminance, new List<EmoteField>() { EmoteField.Amount64 } },
             { EmoteType.Sound, new List<EmoteField>() { EmoteField.Sound } },
             { EmoteType.StampFellowQuest, new List<EmoteField>() { EmoteField.Message } },
             { EmoteType.StampMyQuest, new List<EmoteField>() { EmoteField.Message } },

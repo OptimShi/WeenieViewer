@@ -58,6 +58,7 @@ namespace WeenieViewer.Controls
             if (includePOI)
             {
                 string loc = GetNearestPOI(p);
+                if (loc == "") loc = "Unknown";
                 theText += "\nNearest Point of Interest is " + loc;
             }
             return theText;

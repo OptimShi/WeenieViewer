@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Automation.Peers;
+using System.Windows.Automation.Provider;
 using System.Windows.Controls;
 using System.Windows.Controls.Ribbon;
 using System.Windows.Data;
@@ -15,9 +18,11 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Xml.Linq;
 using WeenieViewer.Controls;
 using WeenieViewer.Db;
 using WeenieViewer.Db.weenie;
+using WeenieViewer.Properties;
 
 namespace WeenieViewer
 {
@@ -31,21 +36,80 @@ namespace WeenieViewer
         public MainWindow()
         {
             InitializeComponent();
+
             lblResultsCount.Text = "";
             lblVersion.Text = "";
             btnCloseTab.Visibility = Visibility.Hidden;
-            btnWiki.Visibility = Visibility.Hidden; 
+            btnWiki.Visibility = Visibility.Hidden;
+            btnAcpedia.Visibility = Visibility.Hidden;
+
+            // Add event handler when typing in weenie search box
+            txtSearch.TextChanged += new TextChangedEventHandler(txtSearch_TextChanged);
+            SetupHotKeys();
 
             // Init our SQLite Database
             db = new DbManager();
-            db.Connect();
-            lblVersion.Text = db.Version;
+            var connected = db.Connect();
+            if (connected)
+            {
+                OnDbConnection();
+#if DEBUG
+                MenuItem newMenuItem = new MenuItem();
+                newMenuItem.Header = "Debug";
+                MainMenu.Items.Add(newMenuItem);
 
-            txtSearch.TextChanged += new TextChangedEventHandler(txtSearch_TextChanged);
+                //Add to a sub item
+                MenuItem subMenuItem = new MenuItem();
+                subMenuItem.Header = "Open All Weenies";
+                subMenuItem.Click += new RoutedEventHandler(DEBUG_OpenAllTheWeenies);
+
+                newMenuItem.Items.Add(subMenuItem);
+#endif
+            }
+            else
+            {
+                PromptForDBConnection();
+            }
+        }
+
+        private void OnDbConnection()
+        {
+            // Clear search
+            lstSearchResults.Items.Clear();
+
+            txtSearch.IsEnabled = true;
+            txtSearch.Text = string.Empty; // Clear any previous input
             txtSearch.Focus();
 
-            SetupHotKeys();
-            // txtSearch.Text = "Asheron"; 
+            // Set StatusBar info
+            lblVersion.Text = db.Version;
+
+            miSearchSpells.IsEnabled = true;
+        }
+
+        private void OnDbNoConnection()
+        {
+            // Clear search
+            lstSearchResults.Items.Clear();
+
+            // Disable and clear search box
+            txtSearch.Text = string.Empty;
+            txtSearch.IsEnabled = false;
+
+            // Set StatusBar info
+            lblVersion.Text = "Database Not Connected";
+
+            miSearchSpells.IsEnabled = false;
+        }
+
+        private void PromptForDBConnection()
+        {
+            OnDbNoConnection();
+
+            // Click the "Options" menu... WPF is different
+            MenuItemAutomationPeer peer = new MenuItemAutomationPeer(miOptions);
+            IInvokeProvider invokeProv = peer.GetPattern(PatternInterface.Invoke) as IInvokeProvider;
+            invokeProv.Invoke();
         }
 
         private void View_OnClick(object sender, RoutedEventArgs e)
@@ -82,7 +146,7 @@ namespace WeenieViewer
                 }
                 else
                 {
-                    searchResults = db.SearchForWeenie(criteria);
+                    searchResults = db.SearchForWeenie(criteria.Trim());
                 }
                 
                 foreach(var w in searchResults)
@@ -179,12 +243,22 @@ namespace WeenieViewer
             {
                 btnCloseTab.Visibility = Visibility.Collapsed;
                 btnWiki.Visibility = Visibility.Collapsed;
+                btnAcpedia.Visibility = Visibility.Collapsed;
                 lblResultsCount.Visibility = Visibility.Visible;
             }
             else
             {
                 btnCloseTab.Visibility = Visibility.Visible;
-                btnWiki.Visibility = Visibility.Visible;
+                if (WeenieViewerSettings.Default.useWikia)
+                {
+                    btnWiki.Visibility = Visibility.Visible;
+                    btnAcpedia.Visibility = Visibility.Collapsed;
+                }
+                else
+                {
+                    btnWiki.Visibility = Visibility.Collapsed;
+                    btnAcpedia.Visibility = Visibility.Visible;
+                }
                 lblResultsCount.Visibility = Visibility.Collapsed;
             }
         }
@@ -205,10 +279,12 @@ namespace WeenieViewer
         {
             try
             {
+                // Ctrl + W closes current tab
                 RoutedCommand firstSettings = new RoutedCommand();
                 firstSettings.InputGestures.Add(new KeyGesture(Key.W, ModifierKeys.Control));
                 CommandBindings.Add(new CommandBinding(firstSettings, CloseTab));
 
+                // Ctrl + S brings up the Spell Search dialog
                 var spellSearch = new RoutedCommand();
                 spellSearch.InputGestures.Add(new KeyGesture(Key.S, ModifierKeys.Control));
                 CommandBindings.Add(new CommandBinding(spellSearch, miSearchSpells_Click));
@@ -244,11 +320,94 @@ namespace WeenieViewer
             Process.Start(new ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });
         }
 
+        private void btnAcpedia_Click(object sender, RoutedEventArgs e)
+        {
+            TabItem ti = tabGroup.SelectedItem as TabItem;
+            TabWeenie content = ti.Content as TabWeenie;
+
+            string name = content.name;
+            string url = "http://www.acpedia.org/?search=" + Uri.EscapeDataString(name);
+            Process.Start(new ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });
+        }
+
         private void miAbout_Click(object sender, RoutedEventArgs e)
         {
             var about = new DialogAbout();
             about.Owner = this;
             about.ShowDialog();
+        }
+
+        private void miOptions_Click(object sender, RoutedEventArgs e)
+        {
+            var options = new DialogOptions();
+            options.Owner = this;
+            var optionsResult = options.ShowDialog();
+            if (optionsResult != null && (bool)optionsResult)
+            {
+                // Trigger the tab change to switch the Wiki button, if neccessary
+                tabGroup_SelectionChanged(null, null);
+
+                // Check if we need to swap database or connect in the first place
+                bool isSQLite = WeenieViewerSettings.Default.DBType == "SQLite";
+                if (!db.db.Connected || isSQLite != db.db.usingSQLite)
+                {
+                    db = new DbManager();
+                    if (db.Connect())
+                    {
+                        OnDbConnection();
+                    }
+                    else
+                    {
+                        PromptForDBConnection();
+                    }
+                }
+
+            }
+
+        }
+
+        /// <summary>
+        /// Rebuilds the EmoteScript text files, used to label items e.g. Refuse: ITEM NAME (WCID)
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void miRegenerateTxtFiles_Click(object sender, RoutedEventArgs e)
+        {
+            var result = MessageBox.Show("Do you want to regenerate your EmoteScript text files?", "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            if (result == MessageBoxResult.Yes)
+            {
+                if (db.RegnerateEmoteScriptTxtFiles())
+                {
+                    MessageBox.Show("Files successfully regenerated.", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                else
+                {
+                    string message = "There was an error regenerating the EmoteScript text files.";
+                    MessageBox.Show(message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
+        private void DEBUG_OpenAllTheWeenies(object sender, RoutedEventArgs e)
+        {
+            MessageBoxResult messageBoxResult = MessageBox.Show("Are you sure?\n\nThis is a time consuming process you cannot quit.", "Open All Weenies", MessageBoxButton.YesNo);
+            if (messageBoxResult == MessageBoxResult.Yes)
+            {
+                MessageBoxResult messageBoxResult2 = MessageBox.Show("Are you REALLY sure?\n\nThis takes forever...", "Open All Weenies", MessageBoxButton.YesNo);
+                if (messageBoxResult2 == MessageBoxResult.Yes)
+                {
+                    foreach (var w in db.WeenieNames)
+                    {
+                        var weenie = db.GetWeenie(w.Key);
+                        weenie = null;
+                        /*
+                        ViewWeenie(w.Key);
+                        TabItem ti = tabGroup.SelectedItem as TabItem;
+                        tabGroup.Items.Remove(ti);
+                        */
+                    }
+                }
+            }
         }
     }
 }

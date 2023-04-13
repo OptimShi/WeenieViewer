@@ -18,8 +18,8 @@ namespace WeenieViewer.Db.weenie
         public int Category { get; set; }
         public float Probability { get; set; }
         public int? WeenieClassId { get; set; }
-        public int? Style { get; set; }
-        public int? Substyle { get; set; }
+        public uint? Style { get; set; }
+        public uint? Substyle { get; set; }
         public string Quest { get; set; }
         public int? VendorType { get; set; }
         public float? MinHealth { get; set; }

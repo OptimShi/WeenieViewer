@@ -1,20 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Reflection.Emit;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls.Primitives;
-using System.Windows.Media;
-using System.Xml.Linq;
 using WeenieViewer.Db;
-using WeenieViewer.Db.weenie;
 using WeenieViewer.Enums;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace WeenieViewer.Appraisal
 {
@@ -712,7 +698,7 @@ namespace WeenieViewer.Appraisal
                 AddItemInfo($"You can only carry {iUnique} of these items.");
 
             float iCooldown = 0;
-            if (InqFloat((PropertyFloat)0xA7u, ref iCooldown))
+            if (InqFloat(PropertyFloat.COOLDOWN_DURATION_FLOAT, ref iCooldown))
             {
                 AddItemInfo("Cooldown When Used: " + DeltaTimeToString(iCooldown));
             }
@@ -1338,7 +1324,6 @@ namespace WeenieViewer.Appraisal
                     strDesc = gearPlatingName;
 
                 int iDecoration = 0;
-                string strMaterial = "";
                 if (InqInt(PropertyInt.APPRAISAL_LONG_DESC_DECORATION_INT, ref iDecoration))
                 {
                     int iGemCount = 0;

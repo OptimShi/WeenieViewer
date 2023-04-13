@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.Common;
 using System.Data.SQLite;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Markup;
 using System.Xml.Linq;
+using MySqlConnector;
 using WeenieViewer.Db.weenie;
 using WeenieViewer.Enums;
 
@@ -17,42 +15,32 @@ namespace WeenieViewer.Db
 {
     public class DbManager
     {
-        SQLiteConnection sqlite;
+        //private SQLiteConnection sqlite;
+        public DbContext db;
         public string Version = "";
         public Dictionary<int, string> SpellNames;
         public Dictionary<string, Position> PointsOfInterest;
         public Dictionary<int, string> WeenieNames;
 
-        public void Connect()
+
+        public bool Connect()
         {
-            string dbName = Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "ace_world.db");
-#if DEBUG
-            dbName = "D:\\Web Development\\sqlite\\ace_world.db"; // For Testing Purposes
-#endif
-            if (!File.Exists(dbName))
+            db = new DbContext();
+            if(db.Connected)
             {
-                //throw new FileNotFoundException("Could Not Find 'ace_world.db'");
-                string ErrorMsg = "Fatal Error: Could not locate database.\n\n" +
-                    "Please ensure ace_world.db is in your application folder.\n\n" +
-                    "This application will now close.";
-                MessageBox.Show(ErrorMsg, "WeenieViewer", MessageBoxButton.OK, MessageBoxImage.Error);
-                Application.Current.Shutdown();
-                return;
+                GetVersion();
+                LoadWeenieNames();
+                LoadSpells();
+                LoadPointsOfInterest();
+                return true;
             }
-            sqlite = new SQLiteConnection("Data Source=" + dbName);
-            // SQLitePCL.raw.SetProvider(new SQLitePCL.SQLite3Provider_e_sqlite3());
-            sqlite.Open();
 
-            GetVersion();
-
-            LoadWeenieNames();
-            LoadSpells();
-            LoadPointsOfInterest();
+            return false;
         }
 
         public void Disconnect()
         {
-            sqlite.Close();
+            db.Close();
         }
 
         public void Dispose()
@@ -62,9 +50,7 @@ namespace WeenieViewer.Db
 
         private void GetVersion()
         {
-            var command = sqlite.CreateCommand();
-            command.CommandText = "SELECT * FROM `version`";
-            using (var reader = command.ExecuteReader())
+            using (var reader = db.GetReader("SELECT * FROM `version`"))
             {
                 while (reader.Read())
                 {
@@ -72,51 +58,25 @@ namespace WeenieViewer.Db
                     string version_patch = reader.GetString(reader.GetOrdinal("patch_Version"));
                     var mod = reader.GetDateTime(reader.GetOrdinal("last_Modified"));
 
-                    Version = $"ace_world Base: {version_base}, Patch: {version_patch}, Date: {mod.ToString()}";
-                    //var object_Id = reader.Get(0);
-                    //var WeenieName = reader.GetString(1);
-
+                    string dbType;
+                    if (db.usingSQLite)
+                        dbType = "SQLite";
+                    else
+                        dbType = "MySQL";
+                    Version = $"{dbType} - ace_world Base: {version_base}, Patch: {version_patch}, Date: {mod.ToString()}";
                 }
             }
         }
 
         public Dictionary<int, string> SearchForWeenie(string name)
-        {
-            Dictionary<int, string> results = new Dictionary<int, string>();
-            var command = sqlite.CreateCommand();
-            command.CommandText =
-                $"SELECT `object_Id`, `value` FROM `weenie_properties_string` WHERE `type` = 1 and `value` like @name order by `object_Id` asc";
-            command.Parameters.AddWithValue("@name", "%" + name + "%");
-
-            using (var reader = command.ExecuteReader())
-            {
-                while (reader.Read())
-                {
-                    var object_Id = reader.GetInt32(0);
-                    var WeenieName = reader.GetString(1);
-                    results.Add(object_Id, WeenieName);
-                }
-            }
+        {   
+            Dictionary<int, string> results = WeenieNames.Where(x=>x.Value.Contains(name, StringComparison.OrdinalIgnoreCase)).ToDictionary(x=>x.Key, x=>x.Value);
             return results;
         }
 
         public Dictionary<int, string> SearchForWCID(string WCID)
         {
-            Dictionary<int, string> results = new Dictionary<int, string>();
-            var command = sqlite.CreateCommand();
-            command.CommandText =
-                $"SELECT `object_Id`, `value` FROM `weenie_properties_string` WHERE `type` = 1 and `object_Id` = @wcid limit 1";
-            command.Parameters.AddWithValue("@wcid", WCID);
-
-            using (var reader = command.ExecuteReader())
-            {
-                while (reader.Read())
-                {
-                    var object_Id = reader.GetInt32(0);
-                    var WeenieName = reader.GetString(1);
-                    results.Add(object_Id, WeenieName);
-                }
-            }
+            Dictionary<int, string> results = WeenieNames.Where(x => x.Key.ToString().StartsWith(WCID)).ToDictionary(x => x.Key, x => x.Value);
             return results;
         }
 
@@ -126,9 +86,7 @@ namespace WeenieViewer.Db
             {
                 WeenieNames = new Dictionary<int, string>();
 
-                var command = sqlite.CreateCommand();
-                command.CommandText = $"SELECT object_Id, value FROM `weenie_properties_string` where `type` = 1 order by object_Id;";
-                using (var reader = command.ExecuteReader())
+                using (var reader = db.GetReader("SELECT object_Id, value FROM `weenie_properties_string` where `type` = 1 order by object_Id;"))
                 {
                     while (reader.Read())
                     {
@@ -146,9 +104,7 @@ namespace WeenieViewer.Db
             {
                 SpellNames = new Dictionary<int, string>();
 
-                var command = sqlite.CreateCommand();
-                command.CommandText = $"SELECT id, name FROM `spell`;";
-                using (var reader = command.ExecuteReader())
+                using (var reader = db.GetReader("SELECT id, name FROM `spell`;"))
                 {
                     while (reader.Read())
                     {
@@ -166,21 +122,28 @@ namespace WeenieViewer.Db
             {
                 PointsOfInterest = new Dictionary<string, Position>();
 
-                var command = sqlite.CreateCommand();
-                command.CommandText = "SELECT poi.name, p.obj_Cell_Id, p.origin_X, p.origin_Y, p.origin_Z FROM `points_of_interest` as poi, `weenie_properties_position` as p where p.object_Id = poi.weenie_Class_Id and p.position_Type = 2 group by poi.weenie_Class_Id;";
-
-                using (var reader = command.ExecuteReader())
+                string sql;
+                if (db.usingSQLite)
+                    sql = "SELECT poi.name, (p.obj_Cell_Id), p.origin_X, p.origin_Y, p.origin_Z FROM `points_of_interest` as poi, `weenie_properties_position` as p where p.object_Id = poi.weenie_Class_Id and p.position_Type = 2 group by poi.weenie_Class_Id;";
+                else
+                    sql = "SELECT poi.name, (p.obj_Cell_Id), p.origin_X, p.origin_Y, p.origin_Z FROM `points_of_interest` as poi, `weenie_properties_position` as p where p.object_Id = poi.weenie_Class_Id and p.position_Type = 2 group by poi.weenie_Class_Id;";
+                using (var reader = db.GetReader(sql))
                 {
                     while (reader.Read())
                     {
-
                         string name = reader.GetString(reader.GetOrdinal("name"));
                         var pos = new Position();
-                        pos.objCellId = reader.GetInt32(reader.GetOrdinal("obj_Cell_Id"));
-                        pos.x = reader.GetFloat(reader.GetOrdinal("origin_X"));
-                        pos.y = reader.GetFloat(reader.GetOrdinal("origin_Y"));
-                        pos.z = reader.GetFloat(reader.GetOrdinal("origin_Z"));
-                        PointsOfInterest.Add(name, pos);
+                        try {
+                            pos.objCellId = Convert.ToUInt32(reader.GetValue(reader.GetOrdinal("obj_Cell_Id")));
+                            pos.x = reader.GetFloat(reader.GetOrdinal("origin_X"));
+                            pos.y = reader.GetFloat(reader.GetOrdinal("origin_Y"));
+                            pos.z = reader.GetFloat(reader.GetOrdinal("origin_Z"));
+                            PointsOfInterest.Add(name, pos);
+                        }
+                        catch
+                        {
+
+                        }
                     }
                 }
             }
@@ -188,39 +151,16 @@ namespace WeenieViewer.Db
 
         public dbWeenie GetWeenie(int wcid)
         {
-            var command = sqlite.CreateCommand();
-            command.CommandText = $"SELECT * FROM sqlite_master where type='table';";
-            using (var reader = command.ExecuteReader())
-            {
-                while (reader.Read())
-                {
-                    string value = reader.GetString(reader.GetOrdinal("tbl_name"));
-                }
-            }
-
             dbWeenie weenie = new dbWeenie();
 
-            command.Reset();
-            command = sqlite.CreateCommand();
-            command.CommandText = $"SELECT * FROM `weenie` where `class_Id` = @wcid limit 1;";
-            command.Parameters.AddWithValue("@wcid", wcid);
-            using (var reader = command.ExecuteReader())
+            string sql = "SELECT * FROM `weenie` where `class_Id` = @wcid limit 1;";
+            Dictionary<string, object> dbParams = new Dictionary<string, object> { { "@wcid", wcid } };
+            using (var reader = db.GetReader(sql, dbParams))
             {
                 while (reader.Read())
                 {
                     weenie.WeenieClass = reader.GetString(reader.GetOrdinal("class_Name"));
                     weenie.WeenieType = reader.GetInt32(reader.GetOrdinal("type"));
-                }
-            }
-
-            command.Reset();
-            command = sqlite.CreateCommand();
-            command.CommandText = $"SELECT count(*) as myCount FROM `weenie_properties_book_page_data`;";
-            using (var reader = command.ExecuteReader())
-            {
-                while (reader.Read())
-                {
-                    var counter = reader.GetInt32(reader.GetOrdinal("myCount"));
                 }
             }
 
@@ -258,11 +198,11 @@ namespace WeenieViewer.Db
         private Dictionary<PropertyBool, bool> _GetBools(int wcid)
         {
             Dictionary<PropertyBool, bool> results = new Dictionary<PropertyBool, bool>();
-            var command = sqlite.CreateCommand();
-            command.CommandText = $"SELECT `type`, `value` FROM `weenie_properties_bool` WHERE `object_Id` = @wcid order by `type`";
-            command.Parameters.AddWithValue("@wcid", wcid);
 
-            using (var reader = command.ExecuteReader())
+            string sql = "SELECT `type`, `value` FROM `weenie_properties_bool` WHERE `object_Id` = @wcid order by `type`";
+            Dictionary<string, object> dbParams = new Dictionary<string, object>();
+            dbParams.Add("@wcid", wcid);
+            using (var reader = db.GetReader(sql, dbParams))
             {
                 while (reader.Read())
                 {
@@ -278,11 +218,9 @@ namespace WeenieViewer.Db
         private Dictionary<PropertyFloat, float> _GetFloats(int wcid)
         {
             Dictionary<PropertyFloat, float> results = new Dictionary<PropertyFloat, float>();
-            var command = sqlite.CreateCommand();
-            command.CommandText = $"SELECT `type`, `value` FROM `weenie_properties_float` WHERE `object_Id` = @wcid order by `type`";
-            command.Parameters.AddWithValue("@wcid", wcid);
-
-            using (var reader = command.ExecuteReader())
+            var sql = $"SELECT `type`, `value` FROM `weenie_properties_float` WHERE `object_Id` = @wcid order by `type`";
+            Dictionary<string, object> dbParams = new Dictionary<string, object> { { "@wcid", wcid } };
+            using (var reader = db.GetReader(sql, dbParams))
             {
                 while (reader.Read())
                 {
@@ -298,12 +236,9 @@ namespace WeenieViewer.Db
         private Dictionary<PropertyInt, int> _GetInts(int wcid)
         {
             Dictionary<PropertyInt, int> results = new Dictionary<PropertyInt, int>();
-            var command = sqlite.CreateCommand();
-            command.CommandText = $"SELECT `type`, `value` FROM `weenie_properties_int` WHERE `object_Id` = @wcid order by `type`";
-            command.Parameters.AddWithValue("@wcid", wcid);
-            command.CommandType = CommandType.Text;
-
-            using (var reader = command.ExecuteReader())
+            var sql = $"SELECT `type`, `value` FROM `weenie_properties_int` WHERE `object_Id` = @wcid order by `type`";
+            Dictionary<string, object> dbParams = new Dictionary<string, object> { { "@wcid", wcid } };
+            using (var reader = db.GetReader(sql, dbParams))
             {
                 while (reader.Read())
                 {
@@ -319,12 +254,9 @@ namespace WeenieViewer.Db
         private Dictionary<PropertyIID, int> _GetIIDs(int wcid)
         {
             Dictionary<PropertyIID, int> results = new Dictionary<PropertyIID, int>();
-            var command = sqlite.CreateCommand();
-            command.CommandText = $"SELECT `type`, `value` FROM `weenie_properties_i_i_d` WHERE `object_Id` = @wcid order by `type`";
-            command.Parameters.AddWithValue("@wcid", wcid);
-            command.CommandType = CommandType.Text;
-
-            using (var reader = command.ExecuteReader())
+            var sql = $"SELECT `type`, `value` FROM `weenie_properties_i_i_d` WHERE `object_Id` = @wcid order by `type`";
+            Dictionary<string, object> dbParams = new Dictionary<string, object> { { "@wcid", wcid } };
+            using (var reader = db.GetReader(sql, dbParams))
             {
                 while (reader.Read())
                 {
@@ -340,12 +272,9 @@ namespace WeenieViewer.Db
         private Dictionary<PropertyDID, int> _GetDIDs(int wcid)
         {
             Dictionary<PropertyDID, int> results = new Dictionary<PropertyDID, int>();
-            var command = sqlite.CreateCommand();
-            command.CommandText = $"SELECT `type`, `value` FROM `weenie_properties_d_i_d` WHERE `object_Id` = @wcid order by `type`";
-            command.Parameters.AddWithValue("@wcid", wcid);
-            command.CommandType = CommandType.Text;
-
-            using (var reader = command.ExecuteReader())
+            var sql = $"SELECT `type`, `value` FROM `weenie_properties_d_i_d` WHERE `object_Id` = @wcid order by `type`";
+            Dictionary<string, object> dbParams = new Dictionary<string, object> { { "@wcid", wcid } };
+            using (var reader = db.GetReader(sql, dbParams))
             {
                 while (reader.Read())
                 {
@@ -361,11 +290,9 @@ namespace WeenieViewer.Db
         private Dictionary<PropertyInt64, long> _GetInt64s(int wcid)
         {
             Dictionary<PropertyInt64, long> results = new Dictionary<PropertyInt64, long>();
-            var command = sqlite.CreateCommand();
-            command.CommandText = $"SELECT `type`, `value` FROM `weenie_properties_int64` WHERE `object_Id` = @wcid";
-            command.Parameters.AddWithValue("@wcid", wcid);
-
-            using (var reader = command.ExecuteReader())
+            var sql = $"SELECT `type`, `value` FROM `weenie_properties_int64` WHERE `object_Id` = @wcid";
+            Dictionary<string, object> dbParams = new Dictionary<string, object> { { "@wcid", wcid } };
+            using (var reader = db.GetReader(sql, dbParams))
             {
                 while (reader.Read())
                 {
@@ -382,11 +309,9 @@ namespace WeenieViewer.Db
         private Dictionary<PropertyString, string> _GetStrings(int wcid)
         {
             Dictionary<PropertyString, string> results = new Dictionary<PropertyString, string>();
-            var command = sqlite.CreateCommand();
-            command.CommandText = $"SELECT `type`, `value` FROM `weenie_properties_string` WHERE `object_Id` = @wcid";
-            command.Parameters.Add(new SQLiteParameter("@wcid", wcid));
-
-            using (var reader = command.ExecuteReader())
+            var sql = $"SELECT `type`, `value` FROM `weenie_properties_string` WHERE `object_Id` = @wcid";
+            Dictionary<string, object> dbParams = new Dictionary<string, object> { { "@wcid", wcid } };
+            using (var reader = db.GetReader(sql, dbParams))
             {
                 while (reader.Read())
                 {
@@ -404,17 +329,16 @@ namespace WeenieViewer.Db
             LoadSpells();
 
             List<SpellBook> results = new List<SpellBook>();
-            var command = sqlite.CreateCommand();
-            command.CommandText = $"SELECT `spell`, `probability` FROM `weenie_properties_spell_book` WHERE `object_Id` = @wcid order by `id`";
-            command.Parameters.Add(new SQLiteParameter("@wcid", wcid));
+            var sql = $"SELECT `spell`, `probability` FROM `weenie_properties_spell_book` WHERE `object_Id` = @wcid order by `id`";
+            Dictionary<string, object> dbParams = new Dictionary<string, object> { { "@wcid", wcid } };
 
-            using (var reader = command.ExecuteReader())
+            using (var reader = db.GetReader(sql, dbParams))
             {
                 while (reader.Read())
                 {
                     SpellBook spellBook = new SpellBook();
                     spellBook.SpellId = reader.GetInt32(reader.GetOrdinal("spell"));
-                    spellBook.Probability = reader.GetFloat(reader.GetOrdinal("spell"));
+                    spellBook.Probability = reader.GetFloat(reader.GetOrdinal("probability"));
                     spellBook.Name = GetSpellName(spellBook.SpellId);
                     results.Add(spellBook);
                 }
@@ -426,11 +350,10 @@ namespace WeenieViewer.Db
         private Book _GetBook(int wcid)
         {
             Book results = new Book();
-            var command = sqlite.CreateCommand();
-            command.CommandText = $"SELECT * FROM `weenie_properties_book` WHERE `object_Id` = @wcid limit 1";
-            command.Parameters.Add(new SQLiteParameter("@wcid", wcid));
+            var sql = $"SELECT * FROM `weenie_properties_book` WHERE `object_Id` = @wcid limit 1";
+            Dictionary<string, object> dbParams = new Dictionary<string, object> { { "@wcid", wcid } };
 
-            using (var reader = command.ExecuteReader())
+            using (var reader = db.GetReader(sql, dbParams))
             {
                 while (reader.Read())
                 {
@@ -446,17 +369,16 @@ namespace WeenieViewer.Db
         private Dictionary<int, BookPageData> _GetBookPageData(int wcid)
         {
             Dictionary<int, BookPageData> results = new Dictionary<int, BookPageData>();
-            var command = sqlite.CreateCommand();
-            command.CommandText = $"SELECT * FROM `weenie_properties_book_page_data` WHERE `object_Id` = @wcid";
-            command.Parameters.Add(new SQLiteParameter("@wcid", wcid));
+            var sql = $"SELECT * FROM `weenie_properties_book_page_data` WHERE `object_Id` = @wcid";
+            Dictionary<string, object> dbParams = new Dictionary<string, object> { { "@wcid", wcid } };
 
-            using (var reader = command.ExecuteReader())
+            using (var reader = db.GetReader(sql, dbParams))
             {
                 while (reader.Read())
                 {
                     BookPageData page = new BookPageData();
                     page.PageId = reader.GetInt32(reader.GetOrdinal("page_Id"));
-                    page.AuthorId= reader.GetInt32(reader.GetOrdinal("author_Id"));
+                    page.AuthorId= reader.GetInt64(reader.GetOrdinal("author_Id"));
                     page.AuthorName = reader.GetString(reader.GetOrdinal("author_Name"));
                     page.AuthorAccount = reader.GetString(reader.GetOrdinal("author_Account"));
 
@@ -483,11 +405,10 @@ namespace WeenieViewer.Db
         private Dictionary<int, weenie.Skill> _GetSkills(int wcid)
         {
             var results = new Dictionary<int, weenie.Skill>();
-            var command = sqlite.CreateCommand();
-            command.CommandText = $"SELECT * FROM `weenie_properties_skill` WHERE `object_Id` = @wcid";
-            command.Parameters.Add(new SQLiteParameter("@wcid", wcid));
+            var sql = $"SELECT * FROM `weenie_properties_skill` WHERE `object_Id` = @wcid";
+            Dictionary<string, object> dbParams = new Dictionary<string, object> { { "@wcid", wcid } };
 
-            using (var reader = command.ExecuteReader())
+            using (var reader = db.GetReader(sql, dbParams))
             {
                 while (reader.Read())
                 {
@@ -511,17 +432,16 @@ namespace WeenieViewer.Db
             var results = new List<Position>();
 
             // Lookup fixed positions
-            var command = sqlite.CreateCommand();
-            command.CommandText = $"SELECT * FROM `weenie_properties_position` WHERE `object_Id` = @wcid";
-            command.Parameters.Add(new SQLiteParameter("@wcid", wcid));
+            var sql = $"SELECT * FROM `weenie_properties_position` WHERE `object_Id` = @wcid";
+            Dictionary<string, object> dbParams = new Dictionary<string, object> { { "@wcid", wcid } };
 
-            using (var reader = command.ExecuteReader())
+            using (var reader = db.GetReader(sql, dbParams))
             {
                 while (reader.Read())
                 {
                     weenie.Position pos = new weenie.Position();
                     pos.positionType = reader.GetInt32(reader.GetOrdinal("position_Type"));
-                    pos.objCellId = reader.GetInt32(reader.GetOrdinal("obj_Cell_Id"));
+                    pos.objCellId = (uint)reader.GetInt64(reader.GetOrdinal("obj_Cell_Id"));
 
                     pos.x = reader.GetFloat(reader.GetOrdinal("origin_X"));
                     pos.y = reader.GetFloat(reader.GetOrdinal("origin_Y"));
@@ -535,16 +455,14 @@ namespace WeenieViewer.Db
                     results.Add(pos);
                 }
             }
-            command.CommandText = $"SELECT * FROM `landblock_instance` WHERE `weenie_Class_Id` = @wcid";
-            command.Parameters.Add(new SQLiteParameter("@wcid", wcid));
-
-            using (var reader = command.ExecuteReader())
+            sql = $"SELECT * FROM `landblock_instance` WHERE `weenie_Class_Id` = @wcid";
+            using (var reader = db.GetReader(sql, dbParams))
             {
                 while (reader.Read())
                 {
                     weenie.Position pos = new weenie.Position();
                     pos.positionType = -1;
-                    pos.objCellId = reader.GetInt32(reader.GetOrdinal("obj_Cell_Id"));
+                    pos.objCellId = (uint)reader.GetInt64(reader.GetOrdinal("obj_Cell_Id"));
 
                     pos.x = reader.GetFloat(reader.GetOrdinal("origin_X"));
                     pos.y = reader.GetFloat(reader.GetOrdinal("origin_Y"));
@@ -565,11 +483,10 @@ namespace WeenieViewer.Db
         private Dictionary<int, Attributes2nd> _GetAttributes2nd(int wcid)
         {
             var results = new Dictionary<int, Attributes2nd>();
-            var command = sqlite.CreateCommand();
-            command.CommandText = $"SELECT * FROM `weenie_properties_attribute_2nd` WHERE `object_Id` = @wcid";
-            command.Parameters.Add(new SQLiteParameter("@wcid", wcid));
+            var sql = $"SELECT * FROM `weenie_properties_attribute_2nd` WHERE `object_Id` = @wcid";
+            Dictionary<string, object> dbParams = new Dictionary<string, object> { { "@wcid", wcid } };
 
-            using (var reader = command.ExecuteReader())
+            using (var reader = db.GetReader(sql, dbParams))
             {
                 while (reader.Read())
                 {
@@ -589,11 +506,10 @@ namespace WeenieViewer.Db
         private Dictionary<int, Attributes> _GetAttributes(int wcid)
         {
             var results = new Dictionary<int, Attributes>();
-            var command = sqlite.CreateCommand();
-            command.CommandText = $"SELECT * FROM `weenie_properties_attribute` WHERE `object_Id` = @wcid";
-            command.Parameters.Add(new SQLiteParameter("@wcid", wcid));
+            var sql = $"SELECT * FROM `weenie_properties_attribute` WHERE `object_Id` = @wcid";
+            Dictionary<string, object> dbParams = new Dictionary<string, object> { { "@wcid", wcid } };
 
-            using (var reader = command.ExecuteReader())
+            using (var reader = db.GetReader(sql, dbParams))
             {
                 while (reader.Read())
                 {
@@ -612,15 +528,14 @@ namespace WeenieViewer.Db
         private List<CreateListItem> _GetCreateList(int wcid)
         {
             var results = new List<CreateListItem>();
-            var command = sqlite.CreateCommand();
             //command.CommandText = $"SELECT * FROM `weenie_properties_create_list` WHERE `object_Id` = @wcid";
-            command.CommandText = "SELECT cl.weenie_Class_Id as wcid, s.value as name, i.value as value, cl.* FROM `weenie_properties_create_list` as cl " +
+            var sql = "SELECT cl.weenie_Class_Id as wcid, s.value as name, i.value as value, cl.* FROM `weenie_properties_create_list` as cl " +
                 "left join `weenie_properties_string` as s on s.object_Id = cl.weenie_Class_Id and s.type = 1 " + 
                 "left join `weenie_properties_int` as i on i.object_Id = cl.weenie_Class_Id and i.type = 19 " + 
                 "WHERE cl.`object_Id` = @wcid";
-            command.Parameters.Add(new SQLiteParameter("@wcid", wcid));
+            Dictionary<string, object> dbParams = new Dictionary<string, object> { { "@wcid", wcid } };
 
-            using (var reader = command.ExecuteReader())
+            using (var reader = db.GetReader(sql, dbParams))
             {
                 while (reader.Read())
                 {
@@ -659,13 +574,12 @@ namespace WeenieViewer.Db
         private List<CreateListItem> _GetItemInCreateList(int wcid)
         {
             var results = new List<CreateListItem>();
-            var command = sqlite.CreateCommand();
-            command.CommandText = "SELECT cl.weenie_Class_Id as wcid, s.value as name, cl.* " +
+            var sql = "SELECT cl.weenie_Class_Id as wcid, s.value as name, cl.* " +
                                 "FROM `weenie_properties_string` as s, `weenie_properties_create_list` as cl " +
                                 "WHERE cl.`weenie_Class_Id` = @wcid and s.type = 1 and s.object_Id = cl.object_Id";
-            command.Parameters.Add(new SQLiteParameter("@wcid", wcid));
+            Dictionary<string, object> dbParams = new Dictionary<string, object> { { "@wcid", wcid } };
 
-            using (var reader = command.ExecuteReader())
+            using (var reader = db.GetReader(sql, dbParams))
             {
                 while (reader.Read())
                 {
@@ -695,12 +609,12 @@ namespace WeenieViewer.Db
         private List<Emote> _GetEmotes(int wcid)
         {
             var results = new Dictionary<int, Emote>();
-            var command = sqlite.CreateCommand();
-            command.CommandText = $"SELECT * FROM `weenie_properties_emote` WHERE `object_Id` = @wcid";
-            command.Parameters.Add(new SQLiteParameter("@wcid", wcid));
-
             List<int> emoteIds = new List<int>();
-            using (var reader = command.ExecuteReader())
+
+            string sql = $"SELECT * FROM `weenie_properties_emote` WHERE `object_Id` = @wcid";
+            Dictionary<string, object> dbParams = new Dictionary<string, object> { { "@wcid", wcid } };
+
+            using (var reader = db.GetReader(sql, dbParams))
             {
                 while (reader.Read())
                 {
@@ -712,9 +626,9 @@ namespace WeenieViewer.Db
                     if(!reader.IsDBNull(reader.GetOrdinal("weenie_Class_Id")))
                         emote.WeenieClassId = reader.GetInt32(reader.GetOrdinal("weenie_Class_Id"));
                     if (!reader.IsDBNull(reader.GetOrdinal("style")))
-                        emote.Style = reader.GetInt32(reader.GetOrdinal("style"));
+                        emote.Style = (uint)reader.GetInt64(reader.GetOrdinal("style"));
                     if (!reader.IsDBNull(reader.GetOrdinal("substyle")))
-                        emote.Substyle = reader.GetInt32(reader.GetOrdinal("substyle"));
+                        emote.Substyle = (uint)reader.GetInt64(reader.GetOrdinal("substyle"));
                     if (!reader.IsDBNull(reader.GetOrdinal("quest")))
                         emote.Quest = reader.GetString(reader.GetOrdinal("quest"));
                     if (!reader.IsDBNull(reader.GetOrdinal("vendor_Type")))
@@ -747,7 +661,6 @@ namespace WeenieViewer.Db
         private Dictionary<int, List<EmoteAction>> _GetEmoteActions(List<int> EmoteIds)
         {
             var results = new Dictionary<int, List<EmoteAction>>();
-            var command = sqlite.CreateCommand();
 
             string inClause = "";
             for(var i = 0; i< EmoteIds.Count; i++)
@@ -755,98 +668,99 @@ namespace WeenieViewer.Db
                 inClause += EmoteIds[i].ToString() + ",";
             }
             inClause = inClause.TrimEnd(new Char[] { ',' });
+            if(inClause.Length > 0 ) { 
+                string sql = $"SELECT * FROM `weenie_properties_emote_action` WHERE `emote_Id` in ({inClause}) order by `order`";
+                //command.Parameters.Add(new SQLiteParameter("@inClause", inClause));
 
-            command.CommandText = $"SELECT * FROM `weenie_properties_emote_action` WHERE `emote_Id` in ({inClause}) order by `order`";
-            //command.Parameters.Add(new SQLiteParameter("@inClause", inClause));
-
-            using (var reader = command.ExecuteReader())
-            {
-                while (reader.Read())
+                using (var reader = db.GetReader(sql))
                 {
-                    EmoteAction action = new EmoteAction();
-                    action.Id = reader.GetInt32(reader.GetOrdinal("id"));
-                    action.EmoteId = reader.GetInt32(reader.GetOrdinal("emote_Id"));
-                    action.Order = (uint)reader.GetInt32(reader.GetOrdinal("order"));
-                    action.Type = (uint)reader.GetInt32(reader.GetOrdinal("type"));
-                    action.Delay = reader.GetFloat(reader.GetOrdinal("delay"));
-                    action.Extent = reader.GetFloat(reader.GetOrdinal("extent"));
-                    if (!reader.IsDBNull(reader.GetOrdinal("motion")))
-                        action.Motion = (uint)reader.GetInt32(reader.GetOrdinal("motion"));
-                    if (!reader.IsDBNull(reader.GetOrdinal("message")))
-                        action.Message = reader.GetString(reader.GetOrdinal("message"));
-                    if (!reader.IsDBNull(reader.GetOrdinal("test_String")))
-                        action.TestString = reader.GetString(reader.GetOrdinal("test_String"));
-                    if (!reader.IsDBNull(reader.GetOrdinal("min")))
-                        action.Min = reader.GetInt32(reader.GetOrdinal("min"));
-                    if (!reader.IsDBNull(reader.GetOrdinal("max")))
-                        action.Max = reader.GetInt32(reader.GetOrdinal("max"));
-                    if (!reader.IsDBNull(reader.GetOrdinal("min_64")))
-                        action.Min64 = reader.GetInt64(reader.GetOrdinal("min_64"));
-                    if (!reader.IsDBNull(reader.GetOrdinal("max_64")))
-                        action.Max64 = reader.GetInt64(reader.GetOrdinal("max_64"));
-                    if (!reader.IsDBNull(reader.GetOrdinal("min_Dbl")))
-                        action.MinDbl = reader.GetDouble(reader.GetOrdinal("min_Dbl"));
-                    if (!reader.IsDBNull(reader.GetOrdinal("max_Dbl")))
-                        action.MaxDbl = reader.GetDouble(reader.GetOrdinal("max_Dbl"));
-                    if (!reader.IsDBNull(reader.GetOrdinal("stat")))
-                        action.Stat = reader.GetInt32(reader.GetOrdinal("stat"));
-                    if (!reader.IsDBNull(reader.GetOrdinal("display")))
-                        action.Display = reader.GetBoolean(reader.GetOrdinal("display"));
-                    if (!reader.IsDBNull(reader.GetOrdinal("amount")))
-                        action.Amount = reader.GetInt32(reader.GetOrdinal("amount"));
-                    if (!reader.IsDBNull(reader.GetOrdinal("amount_64")))
-                        action.Amount64 = reader.GetInt64(reader.GetOrdinal("amount_64"));
-                    if (!reader.IsDBNull(reader.GetOrdinal("hero_X_P_64")))
-                        action.HeroXP64 = reader.GetInt64(reader.GetOrdinal("hero_X_P_64"));
-                    if (!reader.IsDBNull(reader.GetOrdinal("percent")))
-                        action.Percent = reader.GetDouble(reader.GetOrdinal("percent"));
-                    if (!reader.IsDBNull(reader.GetOrdinal("spell_Id")))
-                        action.SpellId = reader.GetInt32(reader.GetOrdinal("spell_Id"));
-                    if (!reader.IsDBNull(reader.GetOrdinal("wealth_Rating")))
-                        action.WealthRating = reader.GetInt32(reader.GetOrdinal("wealth_Rating"));
-                    if (!reader.IsDBNull(reader.GetOrdinal("treasure_Class")))
-                        action.TreasureClass = reader.GetInt32(reader.GetOrdinal("treasure_Class"));
-                    if (!reader.IsDBNull(reader.GetOrdinal("treasure_Type")))
-                        action.TreasureType = reader.GetInt32(reader.GetOrdinal("treasure_Type"));
-                    if (!reader.IsDBNull(reader.GetOrdinal("p_Script")))
-                        action.PScript = reader.GetInt32(reader.GetOrdinal("p_Script"));
-                    if (!reader.IsDBNull(reader.GetOrdinal("sound")))
-                        action.Sound = reader.GetInt32(reader.GetOrdinal("sound"));
-                    if (!reader.IsDBNull(reader.GetOrdinal("destination_Type")))
-                        action.DestinationType = reader.GetInt32(reader.GetOrdinal("destination_Type"));
-                    if (!reader.IsDBNull(reader.GetOrdinal("weenie_Class_Id")))
-                        action.WeenieClassId = (uint)reader.GetInt32(reader.GetOrdinal("weenie_Class_Id"));
-                    if (!reader.IsDBNull(reader.GetOrdinal("stack_Size")))
-                        action.StackSize = reader.GetInt32(reader.GetOrdinal("stack_Size"));
-                    if (!reader.IsDBNull(reader.GetOrdinal("palette")))
-                        action.Palette = reader.GetInt32(reader.GetOrdinal("palette"));
-                    if (!reader.IsDBNull(reader.GetOrdinal("shade")))
-                        action.Shade = reader.GetFloat(reader.GetOrdinal("shade"));
-                    if (!reader.IsDBNull(reader.GetOrdinal("try_To_Bond")))
-                        action.TryToBond = reader.GetBoolean(reader.GetOrdinal("try_To_Bond"));
-                    if (!reader.IsDBNull(reader.GetOrdinal("obj_Cell_Id")))
-                        action.ObjCellId = (uint)reader.GetInt32(reader.GetOrdinal("obj_Cell_Id"));
-                    if (!reader.IsDBNull(reader.GetOrdinal("origin_X")))
-                        action.OriginX = reader.GetFloat(reader.GetOrdinal("origin_X"));
-                    if (!reader.IsDBNull(reader.GetOrdinal("origin_Y")))
-                        action.OriginY = reader.GetFloat(reader.GetOrdinal("origin_Y"));
-                    if (!reader.IsDBNull(reader.GetOrdinal("origin_Z")))
-                        action.OriginZ = reader.GetFloat(reader.GetOrdinal("origin_Z"));
-                    if (!reader.IsDBNull(reader.GetOrdinal("angles_W")))
-                        action.AnglesW = reader.GetFloat(reader.GetOrdinal("angles_W"));
-                    if (!reader.IsDBNull(reader.GetOrdinal("angles_X")))
-                        action.AnglesX = reader.GetFloat(reader.GetOrdinal("angles_X"));
-                    if (!reader.IsDBNull(reader.GetOrdinal("angles_Y")))
-                        action.AnglesY = reader.GetFloat(reader.GetOrdinal("angles_Y"));
-                    if (!reader.IsDBNull(reader.GetOrdinal("angles_Z")))
-                        action.AnglesZ = reader.GetFloat(reader.GetOrdinal("angles_Z"));
-
-                    if (results.ContainsKey(action.EmoteId))
-                        results[action.EmoteId].Add(action);
-                    else
+                    while (reader.Read())
                     {
-                        List<EmoteAction> actions = new List<EmoteAction> { action };
-                        results.Add(action.EmoteId, actions);
+                        EmoteAction action = new EmoteAction();
+                        action.Id = reader.GetInt32(reader.GetOrdinal("id"));
+                        action.EmoteId = reader.GetInt32(reader.GetOrdinal("emote_Id"));
+                        action.Order = (uint)reader.GetInt32(reader.GetOrdinal("order"));
+                        action.Type = (uint)reader.GetInt32(reader.GetOrdinal("type"));
+                        action.Delay = reader.GetFloat(reader.GetOrdinal("delay"));
+                        action.Extent = reader.GetFloat(reader.GetOrdinal("extent"));
+                        if (!reader.IsDBNull(reader.GetOrdinal("motion")))
+                            action.Motion = (uint)reader.GetInt32(reader.GetOrdinal("motion"));
+                        if (!reader.IsDBNull(reader.GetOrdinal("message")))
+                            action.Message = reader.GetString(reader.GetOrdinal("message"));
+                        if (!reader.IsDBNull(reader.GetOrdinal("test_String")))
+                            action.TestString = reader.GetString(reader.GetOrdinal("test_String"));
+                        if (!reader.IsDBNull(reader.GetOrdinal("min")))
+                            action.Min = reader.GetInt32(reader.GetOrdinal("min"));
+                        if (!reader.IsDBNull(reader.GetOrdinal("max")))
+                            action.Max = reader.GetInt32(reader.GetOrdinal("max"));
+                        if (!reader.IsDBNull(reader.GetOrdinal("min_64")))
+                            action.Min64 = reader.GetInt64(reader.GetOrdinal("min_64"));
+                        if (!reader.IsDBNull(reader.GetOrdinal("max_64")))
+                            action.Max64 = reader.GetInt64(reader.GetOrdinal("max_64"));
+                        if (!reader.IsDBNull(reader.GetOrdinal("min_Dbl")))
+                            action.MinDbl = reader.GetDouble(reader.GetOrdinal("min_Dbl"));
+                        if (!reader.IsDBNull(reader.GetOrdinal("max_Dbl")))
+                            action.MaxDbl = reader.GetDouble(reader.GetOrdinal("max_Dbl"));
+                        if (!reader.IsDBNull(reader.GetOrdinal("stat")))
+                            action.Stat = reader.GetInt32(reader.GetOrdinal("stat"));
+                        if (!reader.IsDBNull(reader.GetOrdinal("display")))
+                            action.Display = reader.GetBoolean(reader.GetOrdinal("display"));
+                        if (!reader.IsDBNull(reader.GetOrdinal("amount")))
+                            action.Amount = reader.GetInt32(reader.GetOrdinal("amount"));
+                        if (!reader.IsDBNull(reader.GetOrdinal("amount_64")))
+                            action.Amount64 = reader.GetInt64(reader.GetOrdinal("amount_64"));
+                        if (!reader.IsDBNull(reader.GetOrdinal("hero_X_P_64")))
+                            action.HeroXP64 = reader.GetInt64(reader.GetOrdinal("hero_X_P_64"));
+                        if (!reader.IsDBNull(reader.GetOrdinal("percent")))
+                            action.Percent = reader.GetDouble(reader.GetOrdinal("percent"));
+                        if (!reader.IsDBNull(reader.GetOrdinal("spell_Id")))
+                            action.SpellId = reader.GetInt32(reader.GetOrdinal("spell_Id"));
+                        if (!reader.IsDBNull(reader.GetOrdinal("wealth_Rating")))
+                            action.WealthRating = reader.GetInt32(reader.GetOrdinal("wealth_Rating"));
+                        if (!reader.IsDBNull(reader.GetOrdinal("treasure_Class")))
+                            action.TreasureClass = reader.GetInt32(reader.GetOrdinal("treasure_Class"));
+                        if (!reader.IsDBNull(reader.GetOrdinal("treasure_Type")))
+                            action.TreasureType = reader.GetInt32(reader.GetOrdinal("treasure_Type"));
+                        if (!reader.IsDBNull(reader.GetOrdinal("p_Script")))
+                            action.PScript = reader.GetInt32(reader.GetOrdinal("p_Script"));
+                        if (!reader.IsDBNull(reader.GetOrdinal("sound")))
+                            action.Sound = reader.GetInt32(reader.GetOrdinal("sound"));
+                        if (!reader.IsDBNull(reader.GetOrdinal("destination_Type")))
+                            action.DestinationType = reader.GetInt32(reader.GetOrdinal("destination_Type"));
+                        if (!reader.IsDBNull(reader.GetOrdinal("weenie_Class_Id")))
+                            action.WeenieClassId = (uint)reader.GetInt32(reader.GetOrdinal("weenie_Class_Id"));
+                        if (!reader.IsDBNull(reader.GetOrdinal("stack_Size")))
+                            action.StackSize = reader.GetInt32(reader.GetOrdinal("stack_Size"));
+                        if (!reader.IsDBNull(reader.GetOrdinal("palette")))
+                            action.Palette = reader.GetInt32(reader.GetOrdinal("palette"));
+                        if (!reader.IsDBNull(reader.GetOrdinal("shade")))
+                            action.Shade = reader.GetFloat(reader.GetOrdinal("shade"));
+                        if (!reader.IsDBNull(reader.GetOrdinal("try_To_Bond")))
+                            action.TryToBond = reader.GetBoolean(reader.GetOrdinal("try_To_Bond"));
+                        if (!reader.IsDBNull(reader.GetOrdinal("obj_Cell_Id")))
+                            action.ObjCellId = (uint)reader.GetInt32(reader.GetOrdinal("obj_Cell_Id"));
+                        if (!reader.IsDBNull(reader.GetOrdinal("origin_X")))
+                            action.OriginX = reader.GetFloat(reader.GetOrdinal("origin_X"));
+                        if (!reader.IsDBNull(reader.GetOrdinal("origin_Y")))
+                            action.OriginY = reader.GetFloat(reader.GetOrdinal("origin_Y"));
+                        if (!reader.IsDBNull(reader.GetOrdinal("origin_Z")))
+                            action.OriginZ = reader.GetFloat(reader.GetOrdinal("origin_Z"));
+                        if (!reader.IsDBNull(reader.GetOrdinal("angles_W")))
+                            action.AnglesW = reader.GetFloat(reader.GetOrdinal("angles_W"));
+                        if (!reader.IsDBNull(reader.GetOrdinal("angles_X")))
+                            action.AnglesX = reader.GetFloat(reader.GetOrdinal("angles_X"));
+                        if (!reader.IsDBNull(reader.GetOrdinal("angles_Y")))
+                            action.AnglesY = reader.GetFloat(reader.GetOrdinal("angles_Y"));
+                        if (!reader.IsDBNull(reader.GetOrdinal("angles_Z")))
+                            action.AnglesZ = reader.GetFloat(reader.GetOrdinal("angles_Z"));
+
+                        if (results.ContainsKey(action.EmoteId))
+                            results[action.EmoteId].Add(action);
+                        else
+                        {
+                            List<EmoteAction> actions = new List<EmoteAction> { action };
+                            results.Add(action.EmoteId, actions);
+                        }
                     }
                 }
             }
@@ -854,6 +768,71 @@ namespace WeenieViewer.Db
             return results;
         }
 
+        internal bool RegnerateEmoteScriptTxtFiles()
+        {
+            // Just make sure database is connected before blasting these files away...
+            if(db.Connected == false) return false;
 
+            try
+            {
+                // General SpellName.txt
+                string sql = "select id, name from spell order by id";
+
+                string txtFile = Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "StringMap", "SpellName.txt");
+                using (StreamWriter theFile = new StreamWriter(txtFile, false))
+                {
+                    theFile.WriteLine("// select id, name from spell order by id;");
+                    using (var reader = db.GetReader(sql))
+                    {
+                        while (reader.Read())
+                        {
+                            string name = reader.GetString(reader.GetOrdinal("name"));
+                            int spellId = reader.GetInt32(reader.GetOrdinal("id"));
+                            theFile.WriteLine($"{spellId},{name}");
+                        }
+                    }
+                }
+
+                sql = "select class_Id, class_Name from weenie order by class_Id";
+
+                txtFile = Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "StringMap", "WeenieClassName.txt");
+                using (StreamWriter theFile = new StreamWriter(txtFile, false))
+                {
+                    theFile.WriteLine("// select class_Id, class_Name from weenie order by class_Id;");
+                    using (var reader = db.GetReader(sql))
+                    {
+                        while (reader.Read())
+                        {
+                            string name = reader.GetString(reader.GetOrdinal("class_Name"));
+                            int classId = reader.GetInt32(reader.GetOrdinal("class_Id"));
+                            theFile.WriteLine($"{classId},{name}");
+                        }
+                    }
+                }
+
+                sql = "select object_Id,value from weenie_properties_string where `type`= 1 order by object_Id";
+                txtFile = Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "StringMap", "WeenieName.txt");
+                using (StreamWriter theFile = new StreamWriter(txtFile, false))
+                {
+                    theFile.WriteLine("// select object_Id,value from weenie_properties_string where `type`= 1 order by object_Id;");
+                    using (var reader = db.GetReader(sql))
+                    {
+                        while (reader.Read())
+                        {
+                            string name = reader.GetString(reader.GetOrdinal("value"));
+                            int id = reader.GetInt32(reader.GetOrdinal("object_Id"));
+                            theFile.WriteLine($"{id},{name}");
+                        }
+                    }
+                }
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+
+        }
     }
 }

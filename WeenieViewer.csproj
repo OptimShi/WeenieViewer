@@ -15,14 +15,22 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="EmoteScript\**" />
+    <Compile Remove="packages\**" />
     <EmbeddedResource Remove="EmoteScript\**" />
+    <EmbeddedResource Remove="packages\**" />
     <None Remove="EmoteScript\**" />
+    <None Remove="packages\**" />
     <Page Remove="EmoteScript\**" />
+    <Page Remove="packages\**" />
   </ItemGroup>
   <ItemGroup>
+    <None Remove="Graphics\acpedia.png" />
     <None Remove="Graphics\wiki_icon.png" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Graphics\acpedia.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Graphics\wiki_icon.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -38,13 +46,23 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="MySqlConnector" Version="2.2.5" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
     <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
     <PackageReference Include="System.Data.SQLite" Version="1.0.117.0" />
-    <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.4.410601">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Windows.Compatibility" Version="7.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Properties\WeenieViewerSettings.Designer.cs">
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>WeenieViewerSettings.settings</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="Properties\WeenieViewerSettings.settings">
+      <Generator>PublicSettingsSingleFileGenerator</Generator>
+      <LastGenOutput>WeenieViewerSettings.Designer.cs</LastGenOutput>
+    </None>
   </ItemGroup>
   <PropertyGroup>
     <ContentSQLiteInteropFiles>true</ContentSQLiteInteropFiles>

@@ -220,7 +220,7 @@ namespace WeenieViewer.Appraisal
                 buf += $"{hours} hours, ";
             if (minutes > 0)
                 buf += $"{minutes} minutes, ";
-            buf += $"{months} seconds.";
+            buf += $"{seconds} seconds.";
             return buf;
         }
 

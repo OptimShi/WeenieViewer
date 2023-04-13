@@ -299,7 +299,7 @@ namespace WeenieViewer.SQLWriter
                 string paletteLabel = null;
                 if (input[i].Palette.HasValue)
                 {
-                    paletteLabel = Enum.GetName(typeof(PaletteTemplate), input[i].Palette.Value);
+                    paletteLabel = Enum.GetName(typeof(Enums.PaletteTemplate), input[i].Palette.Value);
                     if (paletteLabel != null)
                         paletteLabel = $" /* {paletteLabel} */";
                 }

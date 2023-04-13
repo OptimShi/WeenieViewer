@@ -5,9 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         WindowStartupLocation="CenterOwner" 
-        FocusManager.FocusedElement="{Binding ElementName=txtSpellName}"
+        FocusManager.FocusedElement="{Binding ElementName=btnOK}"
         ShowInTaskbar="False"
-        Title="About WeenieViewer..." Height="175" Width="330" WindowStyle="ToolWindow" ResizeMode="NoResize" >
+        Title="About WeenieViewer" Height="175" Width="330" ResizeMode="NoResize" >
     <Canvas Margin="0,0,0,0">
         <Image Height="64
                " Canvas.Left="10" Canvas.Top="22" Width="64" Source="../Icon.png" HorizontalAlignment="Left" VerticalAlignment="Top"/>

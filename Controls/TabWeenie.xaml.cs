@@ -184,7 +184,13 @@ namespace WeenieViewer
             else
             {
                 Paragraph myParagraph = new Paragraph();
-                myParagraph.Inlines.Add(appraisal.Text);
+                string info = "";
+                string name = "";
+                if (Weenie.Strings.ContainsKey(PropertyString.NAME_STRING))
+                    name = Weenie.Strings[PropertyString.NAME_STRING];
+                info = "Name: " + name + "\n";
+                info += $"WeenieType: {(WeenieType)Weenie.WeenieType}\nWeenieClass: {Weenie.WeenieClass}\n\n";
+                myParagraph.Inlines.Add(info + appraisal.Text);
                 myFlowDoc.Blocks.Add(myParagraph);
             }
 
@@ -268,6 +274,13 @@ namespace WeenieViewer
             {
                 var trophyTab = new TabTrophies(Weenie.CreateList);
                 WeenieTabControl.Items.Add(trophyTab);
+            }
+
+            var housing = Weenie.CreateList.Where(x => ((x.destinationType & 16) != 0) || (x.destinationType & 32) != 0).ToList();
+            if (housing.Count > 0)
+            {
+                var housingTab = new TabHousing(Weenie.CreateList);
+                WeenieTabControl.Items.Add(housingTab);
             }
 
             //tabProps.IsSelected = true;

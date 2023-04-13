@@ -7,7 +7,6 @@
         mc:Ignorable="d"
         Title="Weenie Viewer" Height="450" Width="855">
     <Grid x:Name="LayoutRoot">
-
         <Grid.RowDefinitions>
             <RowDefinition Height="20" />
             <RowDefinition Height="25" />
@@ -19,13 +18,17 @@
             <ColumnDefinition Width=".1*"/>
         </Grid.ColumnDefinitions>
 
-        <Menu Grid.Row="0">
+        <Menu Grid.Row="0" x:Name="MainMenu">
             <MenuItem Header="File">
                 <MenuItem x:Name="miExit" Header="Exit" Click="miExit_Click"/>
             </MenuItem>
             <MenuItem Header="Search">
                 <MenuItem x:Name="miSearchWeenies" Header="Weenies" Click="miSearchWeenies_Click"/>
                 <MenuItem x:Name="miSearchSpells" Header="Spells..." Click="miSearchSpells_Click" InputGestureText="Ctrl+S" />
+            </MenuItem>
+            <MenuItem Header="Tools">
+                <MenuItem x:Name="miRegenerateTxtFiles" Header="Regenerate EmoteScript Files" Click="miRegenerateTxtFiles_Click"  />
+                <MenuItem x:Name="miOptions" Header="Options..." Click="miOptions_Click" />
             </MenuItem>
             <MenuItem Header="Help">
                 <MenuItem x:Name="miAbout" Header="About..." Click="miAbout_Click" />
@@ -37,10 +40,17 @@
             <TextBox x:Name="txtSearch" Text="" Canvas.Left="63" Canvas.Top="6" HorizontalAlignment="Left" Height="18" VerticalAlignment="Top" Width="137"/>
             <Button x:Name="btnCloseTab" Content="X" Canvas.Right="10" Canvas.Top="7" FontFamily="Arial Black" ToolTip="Close Tab" BorderBrush="Transparent" Click="btnCloseTab_Click" />
 
-            <Button x:Name="btnWiki" Canvas.Right="40" Width="100" Height="26" Canvas.Top="2" HorizontalAlignment="Center" VerticalAlignment="Top" Background="Transparent" BorderBrush="Transparent" Click="btnWiki_Click">
+            <Button x:Name="btnWiki" Canvas.Right="40" Width="100" Height="26" Canvas.Top="2" HorizontalAlignment="Center" VerticalAlignment="Top" Background="Transparent" BorderBrush="Transparent" Click="btnWiki_Click" Visibility="Hidden">
                 <StackPanel Orientation="Horizontal">
                     <Image Source="Graphics/wiki_icon.png" Width="16" Height="16"/>
-                    <TextBlock Text="Search Wikia" />
+                    <TextBlock Text="Search Wikia" Margin="2,0,0,0" />
+                </StackPanel>
+            </Button>
+
+            <Button x:Name="btnAcpedia" Canvas.Right="40" Width="110" Height="26" Canvas.Top="2" HorizontalAlignment="Center" VerticalAlignment="Top" Background="Transparent" BorderBrush="Transparent" Click="btnAcpedia_Click">
+                <StackPanel Orientation="Horizontal">
+                    <Image Source="Graphics/acpedia.png" Width="16" Height="16"/>
+                    <TextBlock Text="Search ACPedia" Margin="2,0,0,0" />
                 </StackPanel>
             </Button>
 
