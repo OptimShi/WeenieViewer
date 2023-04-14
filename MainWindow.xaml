@@ -30,6 +30,10 @@
                 <MenuItem x:Name="miRegenerateTxtFiles" Header="Regenerate EmoteScript Files" Click="miRegenerateTxtFiles_Click"  />
                 <MenuItem x:Name="miOptions" Header="Options..." Click="miOptions_Click" />
             </MenuItem>
+            <MenuItem Header="Server" x:Name="mgServer">
+                <MenuItem x:Name="miFindMissingWeenies" Header="Find Missing Weenies" Click="miFindMissingWeenies_Click"  />
+                <MenuItem x:Name="miFindMissingQuests" Header="Find Missing Quest Flags" Click="miFindMissingQuests_Click" />
+            </MenuItem>
             <MenuItem Header="Help">
                 <MenuItem x:Name="miAbout" Header="About..." Click="miAbout_Click" />
             </MenuItem>

@@ -4,12 +4,15 @@ using System.Data;
 using System.Data.SQLite;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Windows;
+using System.Windows.Forms;
 using System.Windows.Markup;
 using System.Xml.Linq;
 using MySqlConnector;
 using WeenieViewer.Db.weenie;
 using WeenieViewer.Enums;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.ListView;
 
 namespace WeenieViewer.Db
 {
@@ -832,7 +835,131 @@ namespace WeenieViewer.Db
             {
                 return false;
             }
+        }
 
+        public List<string> FindMissingQuests()
+        {
+            List<string> missingQuests = new List<string>();
+            
+            List<string> Quests = new List<string>();
+
+            string sql = "SELECT `name` from `quest`";
+            using (var reader = db.GetReader(sql))
+            {
+                while (reader.Read())
+                {
+                    string name = reader.GetString(reader.GetOrdinal("name"));
+                    Quests.Add(name.ToLower());
+                }
+            }
+
+            // Search Emotes table where category = QuestSuccess/QuestFailure or QuestNoFellow
+            sql = "SELECT `object_Id`, `quest` FROM `weenie_properties_emote` WHERE `quest` is not null and (`category` = 12 or `category` = 13 or `category` = 30) group by `object_id`, `quest`";
+            using (var reader = db.GetReader(sql))
+            {
+                while (reader.Read())
+                {
+                    string questName = reader.GetString(reader.GetOrdinal("quest")).ToLower();
+                    if (questName.Contains("@"))
+                    {
+                        var pieces = questName.Split('@');
+                        questName = pieces[0];
+                    }
+                    if (Quests.IndexOf(questName) == -1)
+                    {
+                        var wcid = reader.GetInt32(reader.GetOrdinal("object_Id"));
+                        string missing = $"{wcid}@{questName}";
+                        if (missingQuests.IndexOf(missing) == -1)
+                        {
+                            missingQuests.Add(missing);
+                        }
+                    }
+                }
+            }
+
+            // Search EmoteActions table where type = InqQuest or InqQuestBits
+            sql = "SELECT e.`object_Id`, ea.`message` FROM `weenie_properties_emote` as e, `weenie_properties_emote_action` as ea " +
+                "WHERE ea.`message` is not null and e.`id` = ea.`emote_Id` and " +
+                $"(ea.`type` = {Convert.ToInt32(EmoteScriptLib.Entity.Enum.EmoteType.UpdateQuest)}" +
+                $" or ea.`type` = {Convert.ToInt32(EmoteScriptLib.Entity.Enum.EmoteType.InqQuest)}" + 
+                $" or ea.`type` = {Convert.ToInt32(EmoteScriptLib.Entity.Enum.EmoteType.StampQuest)}" + 
+                $" or ea.`type` = {Convert.ToInt32(EmoteScriptLib.Entity.Enum.EmoteType.InqQuestSolves)}" + 
+                $" or ea.`type` = {Convert.ToInt32(EmoteScriptLib.Entity.Enum.EmoteType.EraseQuest)}" + 
+                $" or ea.`type` = {Convert.ToInt32(EmoteScriptLib.Entity.Enum.EmoteType.DecrementQuest)}" + 
+                $" or ea.`type` = {Convert.ToInt32(EmoteScriptLib.Entity.Enum.EmoteType.IncrementQuest)}" +
+                $" or ea.`type` = {Convert.ToInt32(EmoteScriptLib.Entity.Enum.EmoteType.InqFellowQuest)}" + 
+                $" or ea.`type` = {Convert.ToInt32(EmoteScriptLib.Entity.Enum.EmoteType.UpdateFellowQuest)}" + 
+                $" or ea.`type` = {Convert.ToInt32(EmoteScriptLib.Entity.Enum.EmoteType.StampFellowQuest)}" + 
+                $" or ea.`type` = {Convert.ToInt32(EmoteScriptLib.Entity.Enum.EmoteType.SetQuestCompletions)}" + 
+                $" or ea.`type` = {Convert.ToInt32(EmoteScriptLib.Entity.Enum.EmoteType.UpdateMyQuest)}" + 
+                $" or ea.`type` = {Convert.ToInt32(EmoteScriptLib.Entity.Enum.EmoteType.InqMyQuest)}" + 
+                $" or ea.`type` = {Convert.ToInt32(EmoteScriptLib.Entity.Enum.EmoteType.StampMyQuest)}" +
+                $" or ea.`type` = {Convert.ToInt32(EmoteScriptLib.Entity.Enum.EmoteType.InqMyQuestSolves)}" +
+                $" or ea.`type` = {Convert.ToInt32(EmoteScriptLib.Entity.Enum.EmoteType.EraseMyQuest)}" +
+                $" or ea.`type` = {Convert.ToInt32(EmoteScriptLib.Entity.Enum.EmoteType.DecrementMyQuest)}" +
+                $" or ea.`type` = {Convert.ToInt32(EmoteScriptLib.Entity.Enum.EmoteType.IncrementMyQuest)}" +
+                $" or ea.`type` = {Convert.ToInt32(EmoteScriptLib.Entity.Enum.EmoteType.SetMyQuestCompletions)}" +
+                $" or ea.`type` = {Convert.ToInt32(EmoteScriptLib.Entity.Enum.EmoteType.InqQuestBitsOn)}" +
+                $" or ea.`type` = {Convert.ToInt32(EmoteScriptLib.Entity.Enum.EmoteType.InqQuestBitsOff)}" +
+                $" or ea.`type` = {Convert.ToInt32(EmoteScriptLib.Entity.Enum.EmoteType.InqMyQuestBitsOn)}" +
+                $" or ea.`type` = {Convert.ToInt32(EmoteScriptLib.Entity.Enum.EmoteType.InqMyQuestBitsOff)}" +
+                $" or ea.`type` = {Convert.ToInt32(EmoteScriptLib.Entity.Enum.EmoteType.SetQuestBitsOn)}" +
+                $" or ea.`type` = {Convert.ToInt32(EmoteScriptLib.Entity.Enum.EmoteType.SetQuestBitsOff)}" +
+                $" or ea.`type` = {Convert.ToInt32(EmoteScriptLib.Entity.Enum.EmoteType.SetMyQuestBitsOn)}" +
+                $" or ea.`type` = {Convert.ToInt32(EmoteScriptLib.Entity.Enum.EmoteType.SetMyQuestBitsOff)}" +
+                ") group by `object_id`, `message`";
+            using (var reader = db.GetReader(sql))
+            {
+                while (reader.Read())
+                {
+                    string questName = reader.GetString(reader.GetOrdinal("message")).ToLower();
+                    if (questName.Contains("@"))
+                    {
+                        var pieces = questName.Split('@');
+                        questName = pieces[0];
+                    }
+                    if (Quests.IndexOf(questName) == -1)
+                    {
+                        var wcid = reader.GetInt32(reader.GetOrdinal("object_Id"));
+                        string missing = $"{wcid}@{questName}";
+                        if (missingQuests.IndexOf(missing) == -1)
+                        {
+                            missingQuests.Add(missing);
+                        }
+                    }
+                }
+            }
+
+            return missingQuests;
+        }
+
+        public List<string> FindMissingWeenies()
+        {
+            List<string> missingWeenies = new List<string>();
+            string sql;
+
+            // Let's look in CreateList...
+            sql = "SELECT object_Id as ownerWCID, weenie_Class_Id as missingWCID, destination_Type " +
+                "from weenie_properties_create_list " +
+                "WHERE weenie_Class_Id NOT IN (SELECT class_Id from  weenie) and weenie_Class_Id > 0 order by ownerWCID";
+            using (var reader = db.GetReader(sql))
+                while (reader.Read())
+                {
+                    var owner_wcid = reader.GetInt32(reader.GetOrdinal("ownerWCID"));
+                    var missing_wcid = reader.GetInt32(reader.GetOrdinal("missingWCID"));
+                    var destinationType = reader.GetInt32(reader.GetOrdinal("destination_Type"));
+
+                    var enumDestination = (EmoteScriptLib.Entity.Enum.DestinationType)destinationType;
+
+                    string match = $"{owner_wcid}@{missing_wcid}@Create List - {enumDestination}";
+                    if (!missingWeenies.Contains(match))
+                        missingWeenies.Add(match);
+
+                }
+
+            // Look in Give/Refuse Emotes
+
+            return missingWeenies;
         }
     }
 }

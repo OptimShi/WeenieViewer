@@ -118,5 +118,17 @@ namespace WeenieViewer.Properties {
                 this["sqlite_dbname"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool enableServerMenu {
+            get {
+                return ((bool)(this["enableServerMenu"]));
+            }
+            set {
+                this["enableServerMenu"] = value;
+            }
+        }
     }
 }

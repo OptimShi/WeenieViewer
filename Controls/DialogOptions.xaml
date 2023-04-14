@@ -41,5 +41,8 @@
             <ComboBoxItem Content="Fandom"/>
             <ComboBoxItem Content="ACPedia"/>
         </ComboBox>
+        <CheckBox x:Name="chkServerDebug" Content="Enable Server Tools" HorizontalAlignment="Left" Margin="330,120,0,0" VerticalAlignment="Top"/>
+        <TextBlock Text="This enables the &quot;Server&quot; menu, which provides some debug tools for checking server data." HorizontalAlignment="Left" Margin="330,140,0,0" VerticalAlignment="Top" Width="237" Height="66" TextWrapping="Wrap" FontStyle="Italic"/>
+
     </Grid>
 </Window>

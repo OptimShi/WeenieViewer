@@ -43,6 +43,11 @@ namespace WeenieViewer
             btnWiki.Visibility = Visibility.Hidden;
             btnAcpedia.Visibility = Visibility.Hidden;
 
+            if (WeenieViewerSettings.Default.enableServerMenu == true)
+                mgServer.Visibility = Visibility.Visible;
+            else
+                mgServer.Visibility = Visibility.Collapsed;
+
             // Add event handler when typing in weenie search box
             txtSearch.TextChanged += new TextChangedEventHandler(txtSearch_TextChanged);
             SetupHotKeys();
@@ -362,6 +367,10 @@ namespace WeenieViewer
                     }
                 }
 
+                if (WeenieViewerSettings.Default.enableServerMenu == true)
+                    mgServer.Visibility = Visibility.Visible;
+                else
+                    mgServer.Visibility = Visibility.Collapsed;
             }
 
         }
@@ -408,6 +417,45 @@ namespace WeenieViewer
                     }
                 }
             }
+        }
+
+        private void miFindMissingQuests_Click(object sender, RoutedEventArgs e)
+        {
+            List<string> missing = db.FindMissingQuests();
+            if(missing.Count == 0)
+            {
+                MessageBox.Show("Good news -- no missing Quests were found!");
+                return;
+            }
+
+            return;
+            var tabMissingQuests = new TabMissingQuests();
+            tabGroup.Items.Add(tabMissingQuests);
+            tabGroup.SelectedItem = tabMissingQuests;
+
+        }
+
+        private void miFindMissingWeenies_Click(object sender, RoutedEventArgs e)
+        {
+            var tabExists = tabGroup.Items.OfType<TabItem>().SingleOrDefault(n => n.Name.ToString() == "tabMissingWeenies");
+            if (tabExists != null)
+            {
+                // Kill any existing tabs
+                tabGroup.Items.Remove(tabExists);
+            }
+
+            var missing = db.FindMissingWeenies();
+            if (missing.Count == 0)
+            {
+                MessageBox.Show("Good news -- no missing Weenies were found!");
+                return;
+            }
+
+            var tabMissingWeenies = new TabMissingWeenies(missing);
+            tabMissingWeenies.Name = "tabMissingWeenies";
+            tabMissingWeenies.Header = "Missing Weenies (" + missing.Count.ToString() + ")";
+            tabGroup.Items.Add(tabMissingWeenies);
+            tabGroup.SelectedItem = tabMissingWeenies;
         }
     }
 }

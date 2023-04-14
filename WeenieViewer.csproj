@@ -52,6 +52,9 @@
     <PackageReference Include="System.Data.SQLite" Version="1.0.117.0" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Update="Controls\TabMissingWeenies.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="Properties\WeenieViewerSettings.Designer.cs">
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <AutoGen>True</AutoGen>

@@ -45,7 +45,7 @@ namespace WeenieViewer.Controls
             var useWiki = WeenieViewerSettings.Default.useWikia;
             if (useWiki)
                 cbxWiki.SelectedIndex = 0;
-            else 
+            else
                 cbxWiki.SelectedIndex = 1;
 
             txtMysqlDB.Text = WeenieViewerSettings.Default.mysql_dbname;
@@ -55,6 +55,11 @@ namespace WeenieViewer.Controls
             txtMysqlUser.Text = WeenieViewerSettings.Default.mysql_user;
 
             txtSQLiteDB.Text = WeenieViewerSettings.Default.sqlite_dbname;
+
+            if (WeenieViewerSettings.Default.enableServerMenu == true)
+                chkServerDebug.IsChecked = true;
+            else
+                chkServerDebug.IsChecked = false;
         }
 
         private void btnOK_Click(object sender, RoutedEventArgs e)
@@ -70,6 +75,11 @@ namespace WeenieViewer.Controls
             WeenieViewerSettings.Default.mysql_user = txtMysqlUser.Text;
 
             WeenieViewerSettings.Default.sqlite_dbname = txtSQLiteDB.Text;
+
+            if (chkServerDebug.IsChecked == true)
+                WeenieViewerSettings.Default.enableServerMenu = true;
+            else
+                WeenieViewerSettings.Default.enableServerMenu = false;
 
             WeenieViewerSettings.Default.Save();
 

@@ -26,5 +26,8 @@
     <Setting Name="sqlite_dbname" Type="System.String" Scope="User">
       <Value Profile="(Default)">ace_world.db</Value>
     </Setting>
+    <Setting Name="enableServerMenu" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
