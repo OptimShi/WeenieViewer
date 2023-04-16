@@ -20,15 +20,15 @@ Program will attempt to open the sqlite database on load (if using the source, a
 Because a picture is worth a thousands words...
 
 ### Basic Search
-<img src="https://github.com/OptimShi/WeenieViewer/raw/Spells/Images/search.png" alt="Basic Search" width="800">
+<img src="https://github.com/OptimShi/WeenieViewer/blob/main/Images/search.png" alt="Basic Search" width="800">
 
 ### Item Result
-<img src="https://github.com/OptimShi/WeenieViewer/raw/Spells/Images/item.png" alt="Item Result" width="800">
+<img src="https://github.com/OptimShi/WeenieViewer/blob/main/Images/item.png" alt="Item Result" width="800">
 
 ### Creature Result
-<img src="https://github.com/OptimShi/WeenieViewer/raw/Spells/Images/creature.png" alt="Creature Result" width="800">
+<img src="https://github.com/OptimShi/WeenieViewer/blob/main/Images/creature.png" alt="Creature Result" width="800">
 
 ### Spell Search
-<img src="https://github.com/OptimShi/WeenieViewer/raw/Spells/Images/spell-search.png" alt="Spell Search" width="400">
+<img src="https://github.com/OptimShi/WeenieViewer/blob/main/Images/spell-search.png" alt="Spell Search" width="400">
 
 
