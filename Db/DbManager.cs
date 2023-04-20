@@ -958,6 +958,21 @@ namespace WeenieViewer.Db
                 }
 
             // Look in Give/Refuse Emotes
+            sql = "SELECT e.`object_Id` as ownerWCID, ea.`weenie_Class_Id` as missingWCID, s.value as name " +
+                "FROM `weenie_properties_emote` as e, `weenie_properties_emote_action` as ea, `weenie_properties_string` as s " +
+                "WHERE ea.`weenie_Class_Id` is not null and ea.`weenie_Class_Id` NOT IN (SELECT class_Id from  weenie) " +
+                " and s.`object_Id` = e.object_Id and s.`type` = 1";
+            using (var reader = db.GetReader(sql))
+                while (reader.Read())
+                {
+                    var owner_wcid = reader.GetInt32(reader.GetOrdinal("ownerWCID"));
+                    var missing_wcid = reader.GetInt32(reader.GetOrdinal("missingWCID"));
+                   
+                    string match = $"{owner_wcid}@{missing_wcid}@Emote";
+                    if (!missingWeenies.Contains(match))
+                        missingWeenies.Add(match);
+
+                }
 
             return missingWeenies;
         }
