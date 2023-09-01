@@ -5,6 +5,15 @@
 * Several systems are built using [ACE (Asheron's Call Emulator)](https://github.com/ACEmulator/ACE) either as a baseline or outright lifted. I've tried to credit those sections where appropriate.
 * EmoteScript is available [here](https://github.com/ACEmulator/EmoteScript)
 
+## Download
+
+Download | Releases
+-------- | --------
+WeenieViewer | [Latest](https://github.com/OptimShi/WeenieViewer/releases/latest) ◦ [All](https://github.com/OptimShi/WeenieViewer/releases)
+
+If you do not have an [`ace_world`](https://github.com/ACEmulator/ACE-World-16PY-Patches) MySQL database already running, be sure to download the `ace_world (SQLite)` database, also avaialble in the releases.
+
+
 ## What is it?
 
 WeenieViewer is a very basic tool to view different weenies (items, generators, monsters, etc) in the ACE database, an emulator for the defunct MMO Asheron's Call.
