@@ -50,7 +50,7 @@ namespace WeenieViewer.Db
 
         private void GetVersion()
         {
-            using (var reader = db.GetReader("SELECT * FROM `version`"))
+            using (var reader = db.GetReader("SELECT * FROM `version` limit 1"))
             {
                 while (reader.Read())
                 {
@@ -126,7 +126,7 @@ namespace WeenieViewer.Db
                 if (db.usingSQLite)
                     sql = "SELECT poi.name, (p.obj_Cell_Id), p.origin_X, p.origin_Y, p.origin_Z FROM `points_of_interest` as poi, `weenie_properties_position` as p where p.object_Id = poi.weenie_Class_Id and p.position_Type = 2 group by poi.weenie_Class_Id;";
                 else
-                    sql = "SELECT poi.name, (p.obj_Cell_Id), p.origin_X, p.origin_Y, p.origin_Z FROM `points_of_interest` as poi, `weenie_properties_position` as p where p.object_Id = poi.weenie_Class_Id and p.position_Type = 2 group by poi.weenie_Class_Id;";
+                    sql = "SELECT poi.name, (p.obj_Cell_Id), p.origin_X, p.origin_Y, p.origin_Z FROM `points_of_interest` as poi, `weenie_properties_position` as p where p.object_Id = poi.weenie_Class_Id and p.position_Type = 2;";
                 using (var reader = db.GetReader(sql))
                 {
                     while (reader.Read())
@@ -738,7 +738,7 @@ namespace WeenieViewer.Db
                         if (!reader.IsDBNull(reader.GetOrdinal("try_To_Bond")))
                             action.TryToBond = reader.GetBoolean(reader.GetOrdinal("try_To_Bond"));
                         if (!reader.IsDBNull(reader.GetOrdinal("obj_Cell_Id")))
-                            action.ObjCellId = (uint)reader.GetInt32(reader.GetOrdinal("obj_Cell_Id"));
+                            action.ObjCellId = (uint)reader.GetInt64(reader.GetOrdinal("obj_Cell_Id"));
                         if (!reader.IsDBNull(reader.GetOrdinal("origin_X")))
                             action.OriginX = reader.GetFloat(reader.GetOrdinal("origin_X"));
                         if (!reader.IsDBNull(reader.GetOrdinal("origin_Y")))

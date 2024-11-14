@@ -49,7 +49,16 @@ namespace WeenieViewer
 
             // Init our SQLite Database
             db = new DbManager();
-            var connected = db.Connect();
+            var connected = false;
+            try
+            {
+                connected = db.Connect();
+            }
+            catch(Exception e)
+            {
+                // Somethign went wrong.
+
+            }
             if (connected)
             {
                 OnDbConnection();
