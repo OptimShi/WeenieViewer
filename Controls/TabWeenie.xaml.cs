@@ -283,6 +283,12 @@ namespace WeenieViewer
                 WeenieTabControl.Items.Add(housingTab);
             }
 
+            if(Weenie.Generator.Count > 0)
+            {
+                var generatorTab = new TabGenerator(Weenie.Generator, wcid);
+                WeenieTabControl.Items.Add(generatorTab);
+            }
+
             //tabProps.IsSelected = true;
             tabItem.IsSelected = true;
 

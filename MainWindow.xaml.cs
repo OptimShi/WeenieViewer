@@ -57,7 +57,8 @@ namespace WeenieViewer
             catch(Exception e)
             {
                 // Somethign went wrong.
-
+                connected = false;
+                MessageBox.Show($"Error Connnecting to database: {e.Message}");
             }
             if (connected)
             {

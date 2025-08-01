@@ -22,6 +22,8 @@ namespace WeenieViewer.Db
         public Dictionary<PropertyString, string> Strings;
         public List<SpellBook> SpellBook; // SpellID, Probability
 
+        public List<Generator> Generator; 
+
         public Book Book;
         public Dictionary<int, BookPageData> BookData;
 

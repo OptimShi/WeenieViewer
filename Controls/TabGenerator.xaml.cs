@@ -22,50 +22,22 @@ namespace WeenieViewer.Controls
     /// </summary>
     public partial class TabGenerator : TabItem
     {
-        public TabGenerator(List<CreateListItem> Items, int filter = 0)
+        public TabGenerator(List<Generator> Generators, int wcid)
         {
             InitializeComponent();
 
-            List<CreateListItem> filteredItems;
-            if(filter == 0)
-                filteredItems = Items;
-            else
-                filteredItems = Items.Where(x => (x.destinationType & filter) > 0).ToList();
+            genText.Text = "";
 
-            foreach(var filteredItem in filteredItems)
+            foreach(var gen in Generators)
             {
-                var myItem = new equippedItem();
-                myItem.name = filteredItem.name;
-                myItem.wcid = filteredItem.wcid;
-                myItem.shade = filteredItem.shade; 
-                myItem.stackSize = filteredItem.stackSize;
-                if (filteredItem.palette < 1 || filteredItem.palette > 93)
-                    myItem.pal = "";
-                else
-                    myItem.pal = ((PaletteTemplate)filteredItem.palette).ToString() + $" ({filteredItem.palette})";
+                if (gen.weenieClassId == wcid)
+                    genText.Text += gen.ToGeneratedByString() + Environment.NewLine + Environment.NewLine;
 
-                equippedItems.Items.Add(myItem);
+                if (gen.objectId == wcid)
+                    genText.Text += gen.ToGeneratesString() + Environment.NewLine + Environment.NewLine;
             }
 
-            if (equippedItems.Items.Count > 1)
-                Header += "s";
-
-            Header += " (" + equippedItems.Items.Count.ToString() + ")";
         }
 
-        private class equippedItem: CreateListItem
-        {
-            public string pal { get; set;  }
-        }
-
-        private void View_OnClick(object sender, RoutedEventArgs e)
-        {
-            var selectedItem = equippedItems.SelectedItem as equippedItem;
-            if(selectedItem != null)
-            {
-                var main = Window.GetWindow(App.Current.MainWindow) as MainWindow;
-                main.ViewWeenie(selectedItem.wcid);
-            }
-        }
     }
 }

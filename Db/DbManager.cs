@@ -189,6 +189,8 @@ namespace WeenieViewer.Db
             weenie.SoldBy = _GetItemInCreateList(wcid);
             weenie.Positions = _GetPositions(wcid);
 
+            weenie.Generator = _GetGenerator(wcid);
+
             //weenie.Emotes = new List<Emote>();
             weenie.Emotes = _GetEmotes(wcid);
 
@@ -765,6 +767,49 @@ namespace WeenieViewer.Db
                 }
             }
 
+            return results;
+        }
+
+        private List<Generator> _GetGenerator(int wcid)
+        {
+            var results = new List<Generator>();
+            var sql = "SELECT g.*, s.value as oName, s2.value as wName from `weenie_properties_generator` as g " +
+                                "left join `weenie_properties_string` as s on s.object_Id = g.object_Id and s.type = 1 " +
+                                "left join `weenie_properties_string` as s2 on s2.object_Id = g.weenie_Class_Id and s.type = 1 " +
+                                "where g.`object_Id` = @wcid or g.`weenie_Class_Id` = @wcid";
+            Dictionary<string, object> dbParams = new Dictionary<string, object> { { "@wcid", wcid } };
+
+            using (var reader = db.GetReader(sql, dbParams))
+            {
+                while (reader.Read())
+                {
+                    Generator gen = new Generator();
+                    gen.objectId = reader.GetInt32(reader.GetOrdinal("object_Id"));
+                    gen.probability = reader.GetFloat(reader.GetOrdinal("probability"));
+                    gen.weenieClassId = reader.GetInt32(reader.GetOrdinal("weenie_Class_Id"));
+                    gen.delay= reader.GetFloat(reader.GetOrdinal("delay"));
+                    gen.initCreate = reader.GetInt32(reader.GetOrdinal("init_Create"));
+                    gen.maxCreate = reader.GetInt32(reader.GetOrdinal("max_Create"));
+                    gen.whenCreate = reader.GetInt32(reader.GetOrdinal("when_Create"));
+                    gen.whereCreate = reader.GetInt32(reader.GetOrdinal("where_Create"));
+                    gen.paletteId = reader.GetInt32(reader.GetOrdinal("palette_Id"));
+                    gen.shade = reader.GetFloat(reader.GetOrdinal("shade"));
+
+                    gen.objCellId = Convert.ToUInt32(reader.GetValue(reader.GetOrdinal("obj_Cell_Id")));
+                    gen.x = reader.GetFloat(reader.GetOrdinal("origin_X"));
+                    gen.y = reader.GetFloat(reader.GetOrdinal("origin_Y"));
+                    gen.z = reader.GetFloat(reader.GetOrdinal("origin_Z"));
+                    gen.qw = reader.GetFloat(reader.GetOrdinal("angles_W"));
+                    gen.qx = reader.GetFloat(reader.GetOrdinal("angles_X"));
+                    gen.qy = reader.GetFloat(reader.GetOrdinal("angles_Y"));
+                    gen.qz = reader.GetFloat(reader.GetOrdinal("angles_Z"));
+
+                    gen.objectName = reader.GetString(reader.GetOrdinal("oName"));
+                    gen.weenieName = reader.GetString(reader.GetOrdinal("wName"));
+
+                    results.Add(gen);
+                }
+            }
             return results;
         }
 
